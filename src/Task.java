@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author fred
  */
-public class Task implements Comparable  {
+public class Task implements Comparable<Task>  {
     
     public BigInteger toFactor;
     public final int index;
@@ -69,8 +69,7 @@ public class Task implements Comparable  {
     }
 
     @Override
-    public int compareTo(Object o) {
-        Task t = (Task)o;
+    public int compareTo(Task t) {        
         return (this.initial.compareTo(t.initial));
     }
     

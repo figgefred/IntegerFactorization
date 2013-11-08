@@ -21,6 +21,8 @@ public class Main {
     public static boolean DEBUG = false;
     public static long totalTimeout = 15000;
     public static FactorMethod f = new Factor_PollardRho();
+    // Ingen sortering == 2 sek extra på kattis.
+    public static boolean ENABLE_SORT = false;
 //    public static FactorMethod f = new Factor_TrialDivision(10000);
 //    public static FactorMethod f = new Factor_TrialPollardRho(175000);
     
@@ -44,9 +46,9 @@ public class Main {
             tasks.add(t);
             line = read.readLine();
         }
-        
-        // Ingen sortering == 2 sek extra på kattis.
-        // Collections.sort(tasks);
+     
+        if(ENABLE_SORT)
+        	Collections.sort(tasks);
         
         Task[] results = new Task[tasks.size()];
         int tasksleft = tasks.size();

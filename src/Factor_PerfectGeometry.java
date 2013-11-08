@@ -15,15 +15,17 @@ public class Factor_PerfectGeometry implements FactorMethod {
 		for(int k = 2; k < NumberOfDimensions; k++)
 		{
 			BigInteger root = getPowRoot(task.toFactor, k);
-			if(root != null)
+			if(root == null)
+				continue;
+			
+			
+			for(int i = 0; i < k; i++)
 			{
-				for(int i = 0; i < k; i++)
-				{
-					task.setPartResult(root);
-				}
-				task.finish();
-				return;
+				task.setPartResult(root);
 			}
+			task.finish();
+			return;
+		
 		}
 	}
 	
@@ -36,29 +38,29 @@ public class Factor_PerfectGeometry implements FactorMethod {
      * @return
      */
     public static BigInteger getPowRoot(BigInteger value, int k) {
-            BigDecimal converted_value = new BigDecimal(value.toString());
-            //new BigDecimal(value.toString());
-            BigDecimal x = new BigDecimal("2").pow(value.bitLength() / k);                
-            BigDecimal fx;
-            BigDecimal fprimx;
-            BigDecimal xold;
-            
-            // Newton-Raphson
-            // x - f(x) / f'(x)
-            // for function: x2 - n = 0
+        BigDecimal converted_value = new BigDecimal(value.toString());
+        //new BigDecimal(value.toString());
+        BigDecimal x = new BigDecimal("2").pow(value.bitLength() / k);                
+        BigDecimal fx;
+        BigDecimal fprimx;
+        BigDecimal xold;
+        
+        // Newton-Raphson
+        // x - f(x) / f'(x)
+        // for function: x2 - n = 0
 
-            do {
-                xold = x;
-                fx = xold.pow(k).subtract(converted_value);                                
-                fprimx = xold.pow(k-1).multiply(BigDecimal.valueOf(k));
-                // Note: not sure why I m using halfdown here. But it seems to work.
-                x = xold.subtract(fx.divide(fprimx, RoundingMode.HALF_DOWN));
+        do {
+            xold = x;
+            fx = xold.pow(k).subtract(converted_value);                                
+            fprimx = xold.pow(k-1).multiply(BigDecimal.valueOf(k));
+            // Note: not sure why I m using halfdown here. But it seems to work.
+            x = xold.subtract(fx.divide(fprimx, RoundingMode.HALF_DOWN));
 //                    System.out.println(x + " " + xold + " " + x.subtract(xold) + " " + x.pow(k));
-            } while(x.subtract(xold).abs().compareTo(BigDecimal.ONE) >= 0);
-            
-            if(x.pow(k).equals(converted_value))
-                    return x.toBigIntegerExact();
-            return null;
+        } while(x.subtract(xold).abs().compareTo(BigDecimal.ONE) >= 0);
+        
+        if(x.pow(k).equals(converted_value))
+            return x.toBigIntegerExact();
+        return null;
     }
 
 	/**
