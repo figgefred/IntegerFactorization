@@ -16,28 +16,29 @@ import java.util.List;
 public class SieveAtkins implements SievePrime {
 
     private int SieveLimit;
+    private double limitSqrt;
     
     private List<Integer> primes;
     
     public SieveAtkins(int limit)
     {
         SieveLimit = limit;
-        init();
+        initSieve();
     }
-    
+
     /**
      * Populate the primes Set
      */
-    private void init()
+    private void initSieve()
     {
-        boolean[] sieve = new boolean[SieveLimit+1];    // Initially false -> no prime
         
+        boolean[] sieve = new boolean[SieveLimit+1];    // Initially false -> no prime
         sieve[0] = false;
         sieve[1] = false;
         sieve[2] = true;
         sieve[3] = true;
         
-        double limitSqrt = Math.sqrt((double)SieveLimit);
+        limitSqrt = Math.sqrt((double)SieveLimit);
         for( int x = 1; x <= limitSqrt; x++)
         {
             int xSqr = x*x;
@@ -93,5 +94,45 @@ public class SieveAtkins implements SievePrime {
     public List<Integer> getPrimes() {
         return primes;
     }
+
+    @Override
+    public int getUpperLimit() {
+        return SieveLimit;
+    }
+
+    @Override
+    public int getPrimeCount() {
+        return primes.size();
+    }
+
+    @Override
+    public int getPrimeAt(int index) {
+        return primes.get(index);
+    }
     
+    @Override
+    public int getLargestPrime() {
+        return primes.get(primes.size()-1);
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for(Integer prime: primes)
+        {
+            sb.append(prime).append(" ");
+        }
+        return sb.toString();
+    }
+    
+    public static void main(String args[])
+    {
+        SievePrime sieve = new SieveAtkins(33);
+        System.out.println(sieve);
+        System.out.println("Largest prime is " + sieve.getLargestPrime());
+        System.out.println("Primes in sieve: " + sieve.getPrimeCount());
+        System.out.println("Sieve limit is: " + sieve.getUpperLimit());
+        
+    }
 }

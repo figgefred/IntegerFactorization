@@ -12,4 +12,8 @@ import java.util.List;
  */
 public interface SievePrime {
     public List<Integer> getPrimes();
+    public int getLargestPrime();
+    public int getUpperLimit();
+    public int getPrimeCount();
+    public int getPrimeAt(int index);
 }
