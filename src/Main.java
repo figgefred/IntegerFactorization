@@ -18,7 +18,11 @@ import java.util.List;
  */
 public class Main {
    
-    public static boolean DEBUG;
+    public static boolean DEBUG = false;
+    public static long totalTimeout = 15000;
+    public static FactorMethod f = new Factor_PollardRho();
+//    public static FactorMethod f = new Factor_TrialDivision(10000);
+//    public static FactorMethod f = new Factor_TrialPollardRho(175000);
     
     public static void main(String args[]) throws IOException {
         
@@ -29,15 +33,6 @@ public class Main {
         
         readingTimer.start();
         
-        DEBUG = false;
-        
-        //FactorMethod f = new Factor_TrialDivision(10000);
-        
-        long totalTimeout = 15000;
-        FactorMethod f = new Factor_PollardRho();
-        
-        //long totalTimeout = 16500;
-        //FactorMethod f = new Factor_TrialPollardRho(175000);
         int i = 0;
         while(true) 
         {
@@ -50,7 +45,9 @@ public class Main {
             line = read.readLine();
         }
         
-        Collections.sort(tasks);
+        // Ingen sortering == 2 sek extra på kattis.
+        // Collections.sort(tasks);
+        
         Task[] results = new Task[tasks.size()];
         int tasksleft = tasks.size();
         long timeleft = totalTimeout - readingTimer.milliseconds();
