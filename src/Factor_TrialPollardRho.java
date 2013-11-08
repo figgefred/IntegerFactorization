@@ -30,7 +30,7 @@ public class Factor_TrialPollardRho implements FactorMethod {
         if(task.isFinished()) {
             return;
         }
-        // Perfect square        
+              
         pollardRho.factor(task);
         return;
     }

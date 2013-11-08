@@ -1,6 +1,8 @@
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /*
  * To change this template, choose Tools | Templates
@@ -28,22 +30,18 @@ public class Factor_TrialDivision implements FactorMethod {
         this.sieve = sieve;
     }
     
-    @Override
-    public void factor(Task task) {
-        
-        BigInteger toFactor = task.toFactor;
-        
-        if(toFactor.equals(BigInteger.ONE)) {
-            task.finish();
+    private BigInteger factor(Task task, BigInteger toFactor) {
+    	 
+        if(toFactor.equals(BigInteger.ONE)) {            
             // task.setPartResult(toFactor); nja?
-            return;
+            return null;
         }
         
         Iterator<Integer> iter = sieve.getPrimes().iterator();
         while(iter.hasNext())
         {
             if(task.isTimeout())
-                return;
+                return toFactor;
             Integer p = iter.next();
             BigInteger prime = BigInteger.valueOf(p.intValue());
             if(prime.multiply(prime).compareTo(toFactor) > 0)
@@ -56,17 +54,31 @@ public class Factor_TrialDivision implements FactorMethod {
         }
         if(toFactor.equals(BigInteger.ONE))
         {
-            task.finish();
-            task.toFactor = null;
+           return null;
         }
         else if(toFactor.isProbablePrime(20))
         {
             task.setPartResult(toFactor);
-            task.finish();
-            task.toFactor = null;
+            return null;
         }
-        else
-            task.toFactor = toFactor;
+        
+        return toFactor;
+    }
+    
+    @Override
+    public void factor(Task task) {        
+        List<BigInteger> partFactors = new ArrayList<>();
+        while(!task.isFinished())
+        {
+        	BigInteger val = task.poll();
+        	BigInteger factorized = factor(task, val);
+        	if(factorized != null)
+        		partFactors.add(factorized);        	
+        }
+        
+        for(BigInteger leftToFactor : partFactors) {
+        	task.push(leftToFactor);
+        }
     }
     
 }

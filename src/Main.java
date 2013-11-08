@@ -7,11 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  *
  * @author fred
@@ -19,12 +14,16 @@ import java.util.List;
 public class Main {
    
     public static boolean DEBUG = false;
-    public static long totalTimeout = 15000;
-    public static FactorMethod f = new Factor_PollardRho();
+    public static long totalTimeout = 18000;
+    
     // Ingen sortering == 2 sek extra på kattis.
     public static boolean ENABLE_SORT = false;
-//    public static FactorMethod f = new Factor_TrialDivision(10000);
-//    public static FactorMethod f = new Factor_TrialPollardRho(175000);
+    
+//    public static FactorMethod f = new Factor_PollardRho();
+//    public static FactorMethod f = new Factor_TrialDivision(500000);
+//    public static FactorMethod f = new Factor_TrialPollardRho(300);
+//    public static FactorMethod f = new Factor_PerfectPollardRho();
+    public static FactorMethod f = new Factor_TrialPerfectRho(3000);
     
     public static void main(String args[]) throws IOException {
         
@@ -56,14 +55,15 @@ public class Main {
         dPrintln("Time left for work is " + timeleft + "ms");
         for(Task t: tasks)
         {
+        	
             long timeout = getNextTimeoutDuration(timeleft, tasksleft);
             t.setNewTimout(new Timing(timeout));
-            dPrint("Task-" + t.index + "(" + t.toFactor + ") was allocated " + timeout + "ms working time" );
+            dPrint("Task-" + t.index + "(" + t.initial + ") was allocated " + timeout + "ms working time" );
             // Work!
             f.factor(t);
-            if(!t.isTimeout())
-                t.finish();
-            results[t.index] = t;
+            
+            t.timer.stop();
+            results[t.index] = t;            
             timeleft -= t.getExecutionTime();
             dPrintln("Task-" + t.index + " executed for " + t.getExecutionTime() + "ms");
             tasksleft--;
@@ -75,7 +75,7 @@ public class Main {
         {
             int finished = 0;
             for (Task result : results) {
-                if (result.isFinished()) {
+                if (!result.isTimeout() && result.isFinished()) {
                     finished++;
                 }
             }
@@ -86,10 +86,10 @@ public class Main {
     
     public static void printResults(Task[] tasks)
     {
-        for(int i = 0; i < tasks.length; i++)
+        for(Task task : tasks)
         {
-            if(tasks[i].isFinished()) {
-                for(BigInteger b: tasks[i].getResults())
+            if(!task.isTimeout() && task.isFinished()) {
+                for(BigInteger b: task.getResults())
                 {
                     System.out.println(b);
                 }

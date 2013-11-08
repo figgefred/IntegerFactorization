@@ -36,6 +36,9 @@ public class Timing {
     }
     
     public boolean timedout() {
+    	if(timeout)
+    		return true;
+    	
         if(!timeout && stopwatch.milliseconds() < Timeout) {
             return false;
         }

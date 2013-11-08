@@ -17,17 +17,18 @@
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Random;
     
 
 public class Factor_PollardRho implements FactorMethod {
-    private final static BigInteger ZERO = new BigInteger("0");
-    private final static BigInteger ONE  = new BigInteger("1");
-    private final static BigInteger TWO  = new BigInteger("2");
-    private final static SecureRandom random = new SecureRandom();
+    protected final static BigInteger ZERO = new BigInteger("0");
+    protected final static BigInteger ONE  = new BigInteger("1");
+    protected final static BigInteger TWO  = new BigInteger("2");
+    protected final static Random random = new Random(1337);
 
-    public BigInteger rho(Task task) {
+    public BigInteger rho(Task task, BigInteger val) {
         
-        BigInteger toFactor = task.toFactor;
+        BigInteger toFactor = val;
         
         BigInteger divisor;
         BigInteger c  = new BigInteger(toFactor.bitLength(), random);
@@ -51,30 +52,36 @@ public class Factor_PollardRho implements FactorMethod {
     
     @Override
     public void factor(Task task) {
-        BigInteger toFactor = task.toFactor;
-        if(task.isTimeout() ||task.isFinished())
-            return;
-        if (toFactor.compareTo(ONE) == 0) {
-            return;
-        }
-        if (toFactor.isProbablePrime(20)) { 
-            task.setPartResult(toFactor);
-            return;
-        }
-        BigInteger divisor = rho(task);
-        if(task.isTimeout())
-            return;
-        task.toFactor = divisor;
-        factor(task);
-        task.toFactor = toFactor.divide(divisor);
-        factor(task);
+    	while(!task.isFinished()) {    		
+	        BigInteger toFactor = task.poll();
+//	        System.out.println(toFactor);
+	        
+	        if (toFactor.compareTo(ONE) == 0) {
+	            continue;
+	        }
+	        if (toFactor.isProbablePrime(20)) { 
+	            task.setPartResult(toFactor);
+	            continue;
+	        }
+	        
+	        BigInteger divisor = rho(task, toFactor);
+	        if(task.isTimeout())
+	            return;
+	        
+	        
+	        task.push(divisor);	   
+//	        factor(task);
+	        task.push(toFactor.divide(divisor));	   
+//	        factor(task);
+    	}
     }
     
     public static void main(String[] args) {
         FactorMethod f = new Factor_PollardRho();
         
-        BigInteger N = new BigInteger("59826358926598236235");
-        Task t = new Task(0, N, null);
+        BigInteger N = new BigInteger("781236781263781278312873").pow(4);
+        //BigInteger N = new BigInteger("59826358926598236235");
+        Task t = new Task(0, N, new Timing(15000));
         f.factor(t);
         for(BigInteger val: t.getResults())
         {
