@@ -26,13 +26,13 @@ public class Factor_PollardRho implements FactorMethod {
     protected final static BigInteger TWO  = new BigInteger("2");
     protected final static Random random = new Random(1337);
 
-    public BigInteger rho(Task task, BigInteger val) {
+    public BigInteger rho(Task task, BigInteger val, int constant) {
         
         BigInteger toFactor = val;
         
         BigInteger divisor;
-        BigInteger c  = new BigInteger(toFactor.bitLength(), random);
-        BigInteger x  = new BigInteger(toFactor.bitLength(), random);
+        BigInteger c  = BigInteger.ONE; //new BigInteger(toFactor.bitLength(), random);
+        BigInteger x  = BigInteger.valueOf(2 + constant);//new BigInteger(toFactor.bitLength(), random);
         BigInteger xx = x;
 
         // check divisibility by 2
@@ -64,10 +64,15 @@ public class Factor_PollardRho implements FactorMethod {
 	            continue;
 	        }
 	        
-	        BigInteger divisor = rho(task, toFactor);
-	        if(task.isTimeout())
-	            return;
-	        
+	        BigInteger divisor;
+	        for(int i = 0; ; i++)
+	        {
+		        divisor = rho(task, toFactor, i);
+		        if(task.isTimeout())
+		            return;
+		        if(!divisor.equals(toFactor))
+		        	break;
+	        }
 	        
 	        task.push(divisor);	   
 //	        factor(task);
