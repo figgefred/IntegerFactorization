@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /*
@@ -21,39 +22,75 @@ public class Main {
     
     public static void main(String args[]) throws IOException {
         
-        DEBUG = false;
-        long totalTimeout = 5000;
-        
         Stopwatch readingTimer = new Stopwatch();
         BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
         List<Task> tasks = new ArrayList<>();
         String line = read.readLine();
+        
         readingTimer.start();
+        
+        DEBUG = false;
+        
+        //FactorMethod f = new Factor_TrialDivision(10000);
+        
+        long totalTimeout = 15000;
+        FactorMethod f = new Factor_PollardRho();
+        
+        //long totalTimeout = 16500;
+        //FactorMethod f = new Factor_TrialPollardRho(175000);
+        int i = 0;
         while(true) 
         {
             if(line == null || line.trim().equals("")) {
                 break;
             }
-            BigInteger i = new BigInteger(line.trim());
-            Task t = new Task(i, null);
+            BigInteger b = new BigInteger(line.trim());
+            Task t = new Task(i++, b, null);
             tasks.add(t);
             line = read.readLine();
         }
         
-        //FactorMethod f = new Factor_TrialDivision(10000);
-        //FactorMethod f = new Factor_PollardRho();
-        FactorMethod f = new Factor_TrialPollardRho(10000);
+        Collections.sort(tasks);
+        Task[] results = new Task[tasks.size()];
         int tasksleft = tasks.size();
         long timeleft = totalTimeout - readingTimer.milliseconds();
         dPrintln("Time left for work is " + timeleft + "ms");
-        int i = 0;
         for(Task t: tasks)
         {
             long timeout = getNextTimeoutDuration(timeleft, tasksleft);
             t.setNewTimout(new Timing(timeout));
+            dPrint("Task-" + t.index + "(" + t.toFactor + ") was allocated " + timeout + "ms working time" );
+            // Work!
             f.factor(t);
-            if(t.isFinished()) {
-                for(BigInteger b: t.getResults())
+            if(!t.isTimeout())
+                t.finish();
+            results[t.index] = t;
+            timeleft -= t.getExecutionTime();
+            dPrintln("Task-" + t.index + " executed for " + t.getExecutionTime() + "ms");
+            tasksleft--;
+        }
+        
+        printResults(results);
+        
+        if(DEBUG) 
+        {
+            int finished = 0;
+            for (Task result : results) {
+                if (result.isFinished()) {
+                    finished++;
+                }
+            }
+            dPrintln("Finished " + finished + "/"+ results.length);
+            dPrintln("Executed for " + readingTimer.stop().milliseconds() + "ms");
+        }
+    }
+    
+    public static void printResults(Task[] tasks)
+    {
+        for(int i = 0; i < tasks.length; i++)
+        {
+            if(tasks[i].isFinished()) {
+                for(BigInteger b: tasks[i].getResults())
                 {
                     System.out.println(b);
                 }
@@ -61,17 +98,7 @@ public class Main {
             else {
                 System.out.println("fail");
             }
-            System.out.println("");   
-            
-            timeleft -= t.getExecutionTime();
-            dPrintln("Task-" + i + " executed for " + t.getExecutionTime() + "ms");
-            tasksleft--;
-        }
-        
-        if(DEBUG) 
-        {
-            dPrintln("");
-            dPrintln("Executed for " + readingTimer.stop().milliseconds() + "ms");
+            System.out.println(""); 
         }
     }
     

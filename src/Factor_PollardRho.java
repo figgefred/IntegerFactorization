@@ -52,18 +52,13 @@ public class Factor_PollardRho implements FactorMethod {
     @Override
     public void factor(Task task) {
         BigInteger toFactor = task.toFactor;
-        
-        if(task.isTimeout())
+        if(task.isTimeout() ||task.isFinished())
             return;
         if (toFactor.compareTo(ONE) == 0) {
-            task.finish();
-            task.toFactor = null;
             return;
         }
         if (toFactor.isProbablePrime(20)) { 
-            task.finish();
             task.setPartResult(toFactor);
-            task.toFactor = null;
             return;
         }
         BigInteger divisor = rho(task);
@@ -79,7 +74,7 @@ public class Factor_PollardRho implements FactorMethod {
         FactorMethod f = new Factor_PollardRho();
         
         BigInteger N = new BigInteger("59826358926598236235");
-        Task t = new Task(N, null);
+        Task t = new Task(0, N, null);
         f.factor(t);
         for(BigInteger val: t.getResults())
         {

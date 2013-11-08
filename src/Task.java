@@ -12,16 +12,19 @@ import java.util.List;
  *
  * @author fred
  */
-public class Task  {
+public class Task implements Comparable  {
     
     public BigInteger toFactor;
-    private BigInteger initial;
+    public final int index;
+    public final BigInteger initial;
     private List<BigInteger> results;
     private Timing timer;
     private boolean finished;
     
-    public Task(BigInteger toFactor, Timing t)
+    public Task(int index, BigInteger toFactor, Timing t)
     {
+        this.index = index;
+        this.initial = toFactor;
         this.toFactor = toFactor;
         results = new ArrayList<>();
         timer = t; // Is ok can be set later
@@ -63,6 +66,12 @@ public class Task  {
     public boolean isTimeout()
     {
         return timer.timedout();
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Task t = (Task)o;
+        return (this.initial.compareTo(t.initial));
     }
     
 }
