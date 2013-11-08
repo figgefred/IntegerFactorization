@@ -35,7 +35,7 @@ public class Factor_TrialDivision implements FactorMethod {
         
         if(toFactor.equals(BigInteger.ONE)) {
             task.finish();
-            task.setPartResult(toFactor);
+            // task.setPartResult(toFactor); nja?
             return;
         }
         
