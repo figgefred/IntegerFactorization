@@ -96,7 +96,7 @@ public class SieveAtkins implements SievePrime {
     }
 
     @Override
-    public int getUpperLimit() {
+    public int getLimit() {
         return SieveLimit;
     }
 
@@ -132,7 +132,7 @@ public class SieveAtkins implements SievePrime {
         System.out.println(sieve);
         System.out.println("Largest prime is " + sieve.getLargestPrime());
         System.out.println("Primes in sieve: " + sieve.getPrimeCount());
-        System.out.println("Sieve limit is: " + sieve.getUpperLimit());
+        System.out.println("Sieve limit is: " + sieve.getLimit());
         
     }
 }
