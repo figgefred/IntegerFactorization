@@ -27,15 +27,22 @@ public class Factor_PerfectPollardRho extends Factor_PollardRho {
 //	            continue;
 //	        }
 	        
-	        BigInteger divisor = rho(task, toFactor);
-	        
-	        if(task.isTimeout())
-	            return;
-	        
-	        if(divisor.equals(toFactor)) {
-	        	task.push(toFactor);
-	        	continue;
+	        BigInteger divisor;
+	        for(int i = 0; ; i++)
+	        {
+		        divisor = rho(task, toFactor, i);
+		        if(task.isTimeout())
+		            return;
+		        if(!divisor.equals(toFactor))
+		        	break;
 	        }
+//	        if(task.isTimeout())
+//	            return;
+//	        
+//	        if(divisor.equals(toFactor)) {
+//	        	task.push(toFactor);
+//	        	continue;
+//	        }
 	        
 	        if(divisor.isProbablePrime(20))
 	        {

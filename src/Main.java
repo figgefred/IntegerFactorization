@@ -21,9 +21,9 @@ public class Main {
     
 //    public static FactorMethod f = new Factor_PollardRho();
 //    public static FactorMethod f = new Factor_TrialDivision(500000);
-//    public static FactorMethod f = new Factor_TrialPollardRho(300);
+//    public static FactorMethod f = new Factor_TrialPollardRho(6000);
 //    public static FactorMethod f = new Factor_PerfectPollardRho();
-    public static FactorMethod f = new Factor_TrialPerfectRho(3000);
+    public static FactorMethod f = new Factor_TrialPerfectRho(16000);
     
     public static void main(String args[]) throws IOException {
         
