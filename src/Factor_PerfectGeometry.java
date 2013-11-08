@@ -65,7 +65,7 @@ public class Factor_PerfectGeometry implements FactorMethod {
      * @param k
      * @return
      */
-    public static BigInteger getPowRoot(BigInteger value, int k) {
+    public BigInteger getPowRoot(BigInteger value, int k) {
         BigDecimal converted_value = new BigDecimal(value.toString());
         //new BigDecimal(value.toString());
         BigDecimal x = new BigDecimal("2").pow(value.bitLength() / k);   
