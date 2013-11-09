@@ -129,7 +129,7 @@ public class Factor_QuadraticSieve implements FactorMethod {
     
     
     public void factor(Task task, BigInteger N) {        
-        // Step 1, 2  - factor out small primes
+// Step 1, 2  - factor out small primes
 //        trialDivision.factor(task);
 //        if(task.isFinished()) {
 //            System.out.println("Done!");
@@ -149,25 +149,181 @@ public class Factor_QuadraticSieve implements FactorMethod {
     	}
     		
     	
-        // Step 3 - is 'N' perfect exponent?
+// Step 3 - is 'N' perfect exponent?
         // Step over
         if(perfectGeo.factor(task, N))
         	return;        
-        
-        // Step 4 - Find smoothness value: O(e^(0.5*sqrt(logNloglogN))
+  
+// Pre INIT for step 4 >>> X
         BigInteger B = getSmoothnessValue(N);
-      
-        System.out.println("# Smoothness value:");
-        System.out.println(B);
+        BigInteger nrootceil = BigMath.sqrt(new BigDecimal(N.toString())).setScale(0, RoundingMode.CEILING).toBigInteger();
+        int magicIntervalConstant = 100;
+        
+// Step 4 - Find smoothness value: O(e^(0.5*sqrt(logNloglogN)) 
+        // Also find nrootceiling sqrt(N)
+        System.out.println("# Smoothness (B):");
+        System.out.println();
+        System.out.println("  " + B);
+        System.out.println("# END of Smoothness");
+        System.out.println();
+        System.out.println("# nRoot:");
+        System.out.println();
+        System.out.println("  " + nrootceil);
+        System.out.println("# END of nRoot");
         System.out.println();
         
-        // Step 5 - Determine factor base, primes where N / P = 1
-        BigInteger lastPrime = BigInteger.valueOf(sieve.getPrimes().get(sieve.getPrimes().size() - 1));
-        if(B.compareTo(lastPrime) == 1)
-        	throw new RuntimeErrorException(null, "herpetyderp: not enough primes!");
+// Step 5 - Determine factor base, primes where N / P = 1
+        System.out.println("# Factor base");
+        System.out.println();
+        BigInteger lastPrime = BigInteger.valueOf(sieve.getLargestPrime());
+        List<BigInteger> factorBase = getFactorBase(N, B);
+        printList(factorBase);
+        System.out.println("# End of factor base");
+        System.out.println();
         
-        List<BigInteger> factorBase = new ArrayList<>();
-        System.out.println("# Factor base:");
+        
+        Matrix xRes = null;
+        
+    redo:
+    while(true) {
+// Step 6 - Determine inital values of V  --> Y(X)
+        BigInteger[] Vs = new BigInteger[magicIntervalConstant]; // 100?!?!?
+        BigInteger[] Qs = new BigInteger[Vs.length];
+        setVsAndQs(N, nrootceil, Vs, Qs);
+        
+        System.out.println("# Q values");
+        System.out.println();
+        printList(Qs);
+        System.out.println("# END of Q values");
+        System.out.println();
+        
+        System.out.println("# V values");
+        System.out.println();
+        printList(Vs);
+        System.out.println("# END of V values");
+        System.out.println();
+        
+// Step 7 - Sieving --> Y(X) congr. (X+ sqrt(N))^2 - N congr. n mod p
+        System.out.println("# Sieving - Y(X) congr. (X+ sqrt(N))^2 - N congr. n mod p");
+        System.out.println();
+    	for(int x = 0 ; x < factorBase.size(); x++)
+    	{
+    		BigInteger prime = factorBase.get(x);
+    		BigInteger[] results = tonelli_shanks(N.mod(prime), prime);
+    		
+    		for(BigInteger result : results) {
+    			System.out.println("  " + prime + " tonnelli: " + result);
+    			int startindex = result.intValue() - nrootceil.intValue() % prime.intValue();  
+    			System.out.println("  " + prime + " (before) " + startindex);
+    			while(startindex < 0)
+    				startindex += prime.intValue();
+    			System.out.println("  " + prime + " (after) " + startindex);
+    			System.out.println();
+    			
+	// V[i]/p until Vs[i] mod prime != 0
+    			for(int i = startindex; i < Vs.length; i += prime.intValue())    
+    				while(Vs[i].mod(prime).equals(BigInteger.ZERO))
+    					Vs[i] = Vs[i].divide(prime);
+    		}
+    	}
+    	System.out.println("# END of Sieving");
+    	System.out.println();
+        
+	// Compiling sieving results - determining "smooth values"
+    	List<BigInteger> ys = new ArrayList<BigInteger>();
+    	List<BigInteger> is = new ArrayList<BigInteger>();
+    	System.out.println("# Smooth values found:");
+    	System.out.println();
+    	for(int i = 0; i < Vs.length; i++) 
+        {
+    		if(Vs[i].equals(BigInteger.ONE)) {
+    			BigInteger q = Qs[i];
+    			System.out.println(("  " + "i:" + (i+nrootceil.intValue())) + " y:" + Vs[i] + " q:" + q);
+    			System.out.println();
+    			ys.add(q);
+    			is.add(BigInteger.valueOf(i).add(nrootceil));
+    		}
+        }
+    	System.out.println("# End of Smooth values");
+    	System.out.println();
+   
+// Step 8 - Setup matrix then gauss eliminate    	
+
+   
+    	System.out.println("# Matrix voodoo:");
+    	System.out.println();
+    	xRes = doGaussMagic(ys, factorBase);
+    	if(xRes == null)
+    	{
+    		magicIntervalConstant += magicIntervalConstant/2;
+    		continue redo;
+    	}
+    	else
+    	{
+    		System.out.println("# Matrix X");
+    		System.out.println();
+    		printMatrix(xRes);
+    		System.out.println("# END Matrix X");
+    		System.out.println();
+    	}
+    	System.out.println("# END Matrix voodoo");
+    	System.out.println();
+    	
+    	break;
+    }
+    // 	END OF WHILE ITERATION
+    	
+	/*	BigInteger prod1 = BigInteger.ONE;
+		BigInteger prod2 = BigInteger.ONE;
+
+		System.out.println("# Products found:");
+        
+		System.out.println(prod1);
+		System.out.println(prod2);
+    	
+		
+		
+		
+//        BigInteger factor = perfectGeo.getPowRoot(prod2, 2).subtract(perfectGeo.getPowRoot(prod1, 2)).abs();
+		BigInteger factor = BigMath.isqrt(prod2).subtract(BigMath.isqrt(prod1)).abs();
+        factor = factor.gcd(N);
+		BigInteger quo = N.divide(factor);
+		if(factor.isProbablePrime(20)) {
+			System.out.println("# Nu lägger jag till " + factor + " som ett primtal!");
+			task.setPartResult(factor);
+		} else if(!factor.equals(BigInteger.ONE)) {
+			System.out.println("# Adding factor to queue: " + factor);
+			task.push(factor);
+		}
+		
+		if(quo.isProbablePrime(20)) {
+			System.out.println("# Nu lägger jag  (qup) till " + quo + " som ett primtal!");
+			task.setPartResult(quo);
+		} else if(!quo.equals(BigInteger.ONE)) {
+			System.out.println("# Adding quo to queue: " + quo);
+			task.push(quo);
+		}
+		
+		System.out.println("# Current results:");
+		for(BigInteger result : task.getResults()) 
+			System.out.println(result);
+		System.out.println();
+		System.out.println();
+       */
+    }
+	
+	private void setVsAndQs(BigInteger N, BigInteger nrootceil, BigInteger[] vs, BigInteger[] qs) {
+        
+        for(int i = 0; i < vs.length; i++)
+        {
+        	vs[i] = Q(BigInteger.valueOf(i), nrootceil, N);
+        	qs[i] = vs[i];
+        }
+		
+	}
+
+	private List<BigInteger> getFactorBase(BigInteger N, BigInteger B) {
+		List<BigInteger> factorBase = new ArrayList<>();
         for(int prime : this.sieve.getPrimes()) {
         	BigInteger p = BigInteger.valueOf(prime);
         	if(p.compareTo(B) > -1)
@@ -181,83 +337,21 @@ public class Factor_QuadraticSieve implements FactorMethod {
         		factorBase.add(p);
         		System.out.println(p);
         	}
-        }        
-        System.out.println("# End of factor base");
-        
-//        System.out.println();
-        // Step 6 - Determine nrootceil (fulhack med string?)
-        BigInteger nrootceil = BigMath.sqrt(new BigDecimal(N.toString())).setScale(0, RoundingMode.CEILING).toBigInteger(); // Fred förstår inte. Men jag gör det.
-        System.out.println("# nRoot:");
-        System.out.println(nrootceil);
-        System.out.println();
-//        System.out.println();
-        System.out.println("# Q values");
-        BigInteger[] V = new BigInteger[100]; // 100?!?!?
-        BigInteger[] Qs = new BigInteger[V.length];
-        for(int i = 0; i < V.length; i++)
-        {
-        	V[i] = Q(BigInteger.valueOf(i), nrootceil, N);
-        	Qs[i] = V[i];
-        	System.out.println(BigInteger.valueOf(i) + " " + V[i]);
-        }
-        System.out.println();
-        
-        System.out.println();
-        System.out.println("# x2 = n mod p values:");
-    	for(int x = 0 ; x < factorBase.size(); x++)
-    	{
-    		BigInteger prime = factorBase.get(x);
-    		
-    		BigInteger[] results = tonelli_shanks(N.mod(prime), prime);
-    		
-    		for(BigInteger result : results) {
-    			System.out.println(prime + " tonnelli: " + result);
-    			int startindex = result.intValue() - nrootceil.intValue() % prime.intValue();  
-    			System.out.println(prime + " (before) " + startindex);
-    			while(startindex < 0)
-    				startindex += prime.intValue();
-    			System.out.println(prime + " (after) " + startindex);
-    			System.out.println();
-    			for(int i = startindex; i < V.length; i += prime.intValue())    
-    				while(V[i].mod(prime).equals(BigInteger.ZERO))
-    					V[i] = V[i].divide(prime);
-    		}
-    	}
-    	System.out.println("# end");
-    	System.out.println();
-    	
-    	List<BigInteger> ys = new ArrayList<BigInteger>();
-    	List<BigInteger> is = new ArrayList<BigInteger>();
-    	System.out.println("# Vs found:");
-    	for(int i = 0; i < V.length; i++)
-        {
-    		if(V[i].equals(BigInteger.ONE)) {
-    			BigInteger q = Qs[i];
-    			System.out.println((i+nrootceil.intValue()) + " " + V[i] + " " + q);
-    			
-    			
-    			ys.add(q);
-    			is.add(BigInteger.valueOf(i).add(nrootceil));
-    		}
-        }
-    	System.out.println("# End of vs");
-    	System.out.println();
-    	
-   
-    	System.out.println("# Matrix:");
+        } 
+        return factorBase;
+	}
+
+	private Matrix doGaussMagic(List<BigInteger> ys, List<BigInteger> factorBase) {
     	// Whoa
     	
-    	int rows = factorBase.size();
-    	int cols = ys.size();
-//    	double[][] ematrix = new double[ys.size()][factorBase.size()];
-    	double[][] matrix = new double[rows][cols];
-    	
-		for(int i = 0; i < rows; i++) {			
-			
-			
-	    	for(int j = 0; j < cols; j++) {	
-	    		BigInteger tmp = ys.get(j);
-	    		BigInteger prime = factorBase.get(i);
+		
+		System.out.println("# Init matrix A");
+		System.out.println();
+    	Matrix A = new Matrix(ys.size(), factorBase.size());
+		for(int i = 0; i < A.rowCount(); i++) {			
+	    	for(int j = 0; j < A.colCount(); j++) {
+	    		BigInteger tmp = ys.get(i);
+	    		BigInteger prime = factorBase.get(j);
 	    		
     			int e = 0;    			
     			while(tmp.mod(prime).equals(BigInteger.ZERO)) {
@@ -266,21 +360,29 @@ public class Factor_QuadraticSieve implements FactorMethod {
     			}
     			
 //    			ematrix[i][j] = e;
-    			matrix[i][j] = e % 2;
-    			
-    			System.out.print(matrix[i][j]);
+    			A.set(i, j, e % 2);
     		}
 	    	
-	    	System.out.println();
 //	    	System.out.println(matrix[i]);    		
     	}
-		System.out.println("#EOF matrix");
+		printMatrix(A);
+		
+		System.out.println("# END matrix A");
     	System.out.println();
-    	
+    	   	
+    	Matrix x = null;
+    	try {
+    		Matrix nulls = new Matrix(factorBase.size(), 1); 
+    		x = A.solve(nulls);
+    	} catch(RuntimeException e) {
+    		System.err.println("Redo sieve");
+    		return null;
+    	}
+    	return x;
 //    	System.out.println("#E matrix");
 //    	for(int i = 0; i < ys.size(); i++) {
 //    		for(int j = 0; j < factorBase.size(); j++) {
-//    			System.out.print(ematrix[i][j]);
+//    			System.out.printprintMatrix(ematrix[i][j]);
 //    		}
 //    		System.out.println();
 //    	}
@@ -312,77 +414,37 @@ public class Factor_QuadraticSieve implements FactorMethod {
 //    		}   
 //    		}
 //    	}
-    	double[] nulls = new double[factorBase.size()]; 
-    	double[] x = GaussianElimination.solve(matrix, nulls);
-    	
-    	for(int i = 0; i < x.length; i++)
-    	{
-    		System.out.print(x[i]);
-    	}
-    	System.out.println();
-    	
-//    	System.out.println("# Gauss eliminated?");
-//    	for(int[] row : matrix) {
-//    		for(int col : row)
-//    		{
-//    			System.out.print(col);
-//    		}
-//    		System.out.println();
-//    	}
-    	
-
-    	System.out.println();
-    	
-		BigInteger prod1 = BigInteger.ONE;
-		BigInteger prod2 = BigInteger.ONE;
-
-		System.out.println("# Products found:");
-		System.out.println(prod1);
-		System.out.println(prod2);
-    	
 		
-//        BigInteger factor = perfectGeo.getPowRoot(prod2, 2).subtract(perfectGeo.getPowRoot(prod1, 2)).abs();
-		BigInteger factor = BigMath.isqrt(prod2).subtract(BigMath.isqrt(prod1)).abs();
-        
-        factor = factor.gcd(N);
-
-        
-        BigInteger quo = N.divide(factor);
-        if(factor.isProbablePrime(20)) {
-        	System.out.println("# Nu lägger jag till " + factor + " som ett primtal!");
-        	task.setPartResult(factor);
-        } else if(!factor.equals(BigInteger.ONE)) {
-        	System.out.println("# Adding factor to queue: " + factor);
-        	task.push(factor);
-        }
-        
-        if(quo.isProbablePrime(20)) {
-        	System.out.println("# Nu lägger jag  (qup) till " + quo + " som ett primtal!");
-        	task.setPartResult(quo);
-        } else if(!quo.equals(BigInteger.ONE)) {
-        	System.out.println("# Adding quo to queue: " + quo);
-        	task.push(quo);
-        }
-        
-        System.out.println("# Current results:");
-        for(BigInteger result : task.getResults()) 
-        	System.out.println(result);
-        System.out.println();
-        System.out.println();
-       
-    }
-	
+	}
+/*
 	public void swap_rows(int[] row1, int[] row2) {
 		if(row1.length != row2.length)
 			throw new IllegalArgumentException("different row sizes");		
-		
+    	if(!(objs instanceof List)) {
+    		return;	
+		}
+    	
+    	List ob
 		for(int i = 0; i < row1.length; i++) {
 			int tmp = row1[i];
 			row1[i] = row2[i];
 			row2[i] = tmp;
 		}
-	}
+	}*/
 
+	public void printMatrix(Matrix a)
+	{
+		for(int r = 0; r < a.rowCount(); r++)
+		{
+			System.out.print("  ");
+			for(int c = 0; c < a.colCount(); c++)
+			{
+				System.out.print( ((int)a.get(r, c)) + " ");
+			}
+			System.out.println();
+		}
+	}
+	
     //  Q(x) = (√N + x)^2 − N
     public BigInteger Q(BigInteger x, BigInteger nrootceil, BigInteger toFactor) {
     	//perfectGeo.getPowRoot(x, k)
@@ -402,7 +464,7 @@ public class Factor_QuadraticSieve implements FactorMethod {
     private BigInteger getSmoothnessValue(BigInteger N)
     {
         BigDecimal b = new BigDecimal(N.toString());
-//        b.setScale(precision, RoundingMode.DOWN);
+//        b.setScale(precision, Rounding        for()Mode.DOWN);
         
         BigDecimal C = new BigDecimal(3); 
 //        C.setScale(precision, RoundingMode.HALF_DOWN);
@@ -416,7 +478,7 @@ public class Factor_QuadraticSieve implements FactorMethod {
     public static void main(String[] args)
     {
     	BigInteger b = new BigInteger("15347");
-//    	BigInteger b = new BigInteger("87463");
+//    	BigInteger b = new BigInteger("87463");Object
 //    	BigInteger b = new BigInteger("90283");
 //    	BigInteger b = new BigInteger("90283");
 //        BigInteger b = new BigInteger("138");
@@ -433,7 +495,11 @@ public class Factor_QuadraticSieve implements FactorMethod {
         
         BigInteger t1 = y.subtract(x).gcd(b);
         BigInteger t2 = x.add(y).gcd(b);
-        
+        int i = 0;
+    /*	for(Object o: objs)
+    	{
+    		System.out.println("  [" + (i++) + "]" + ": " + o.toString());
+    	}*/
         System.out.println(t1);
         System.out.println(t2);
         System.out.println();
@@ -456,6 +522,24 @@ public class Factor_QuadraticSieve implements FactorMethod {
         
         //BigInteger res = _BigIntegerMath.isqrt(b);
         //System.out.println("sqrt(" + b.toString() + ") = " + res);
+    }
+    
+    private void printList(Object[] objs)
+    {
+    	int i = 0;
+    	for(Object o: objs)
+    	{
+    		System.out.println("  [" + (i++) + "]" + ": " + o.toString());
+    	}    	
+    }
+    
+    private void printList(List objs)
+    {   	
+    	int i = 0;
+    	for(Object o: objs)
+    	{
+    		System.out.println("  [" + (i++) + "]" + ": " + o.toString());
+    	}
     }
     
     
