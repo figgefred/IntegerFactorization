@@ -56,6 +56,79 @@ public class BigMath {
 "549227850925778256209262264832627793338656648162772516401910590049164499828931") ;
     
     
+        /** Evaluate floor(sqrt(n)).
+        * @param n The non-negative argument.
+        * @return The integer square root. The square root rounded down.
+        * @since 2010-08-27
+        * @author Richard J. Mathar
+        */
+        static public int isqrt(final int n)
+        {
+                if ( n < 0 )
+                        throw new ArithmeticException("Negative argument "+ n) ;
+                final double resul= Math.sqrt((double)n) ;
+                return (int)Math.round(resul) ;
+        }
+
+        /** Evaluate floor(sqrt(n)).
+        * @param n The non-negative argument.
+        *  Arguments less than zero throw an ArithmeticException.
+        * @return The integer square root, the square root rounded down.
+        * @since 2010-08-27
+        * @author Richard J. Mathar
+        */
+        static public long isqrt(final long n)
+        {
+                if ( n < 0 )
+                        throw new ArithmeticException("Negative argument "+ n) ;
+                final double resul= Math.sqrt((double)n) ;
+                return Math.round(resul) ;
+        }
+
+        /** Evaluate floor(sqrt(n)).
+        * @param n The non-negative argument.
+        *  Arguments less than zero throw an ArithmeticException.
+        * @return The integer square root, the square root rounded down.
+        * @since 2011-02-12
+        * @author Richard J. Mathar
+        */
+        static public BigInteger isqrt(final BigInteger n)
+        {
+                if ( n.compareTo(BigInteger.ZERO) < 0 )
+                        throw new ArithmeticException("Negative argument "+ n.toString()) ;
+                /* Start with an estimate from a floating point reduction.
+                */
+                BigInteger x  ;
+                final int bl = n.bitLength() ;
+                if ( bl > 120)
+                        x = n.shiftRight(bl/2-1) ;
+                else
+                {
+                        final double resul= Math.sqrt(n.doubleValue()) ;
+                        x = new BigInteger(""+Math.round(resul)) ;
+                }
+
+                final BigInteger two = new BigInteger("2") ;
+                while ( true)
+                {
+                        /* check whether the result is accurate, x^2 =n
+                        */
+                        BigInteger x2 = x.pow(2) ;
+                        BigInteger xplus2 = x.add(BigInteger.ONE).pow(2) ;
+                        if ( x2.compareTo(n) <= 0 && xplus2.compareTo(n) > 0)
+                                return x ;
+                        xplus2 = xplus2.subtract(x.shiftLeft(2)) ;
+                        if ( xplus2.compareTo(n) <= 0 && x2.compareTo(n) > 0)
+                                return x.subtract(BigInteger.ONE) ;
+                        /* Newton algorithm. This correction is on the
+                        * low side caused by the integer divisions. So the value required
+                        * may end up by one unit too large by the bare algorithm, and this
+                        * is caught above by comparing x^2, (x+-1)^2 with n.
+                        */
+                        xplus2 = x2.subtract(n).divide(x).divide(two) ;
+                        x = x.subtract(xplus2) ;
+                }
+        }
         
         /** The square root.
         * @param x the non-negative argument.
