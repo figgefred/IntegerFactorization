@@ -15,16 +15,17 @@ public class Factor_PollardRhoBrent implements FactorMethod {
     
     private BigInteger TEN = BigInteger.TEN;
     private BigInteger TWO = new BigInteger("2");
-    private BigInteger THREE = new BigInteger("3");
-    private BigInteger TENTHOUSAND = new BigInteger("10000");
     private BigInteger ONE = BigInteger.ONE;
     private BigInteger ZERO = BigInteger.ZERO;
     
+    private BigInteger C = new BigInteger("1337");
+    private BigInteger MAXITERS = new BigInteger("10000");
+    
     private Random random = new Random(1337);
     
-    private BigInteger f(BigInteger y, BigInteger c, BigInteger n)
+    private BigInteger f(BigInteger y, BigInteger n)
     {
-        return ((y.multiply(y)).add(c)).mod(n);
+        return ((y.multiply(y)).add(C)).mod(n);
     }
     
     public BigInteger factorizebrent(Task task, BigInteger n) {
@@ -34,25 +35,24 @@ public class Factor_PollardRhoBrent implements FactorMethod {
             return TWO;
         }
         
-        BigInteger k = new BigInteger("1");
-        BigInteger i = new BigInteger("1");
-        
-        BigInteger x = new BigInteger("1");
-        BigInteger y = new BigInteger("1");
-        BigInteger ys = new BigInteger("1");
+        BigInteger k = null;
+        BigInteger i = null;
+        BigInteger x = null;
+        BigInteger ys = null;
 
-        BigInteger m=TEN;
+        long tmp =(long) random.nextInt(10)+1; 
+        BigInteger m = BigInteger.valueOf(tmp);
         BigInteger r=ONE;
         BigInteger iter=ZERO;
-        BigInteger z=ZERO;
+        BigInteger z=new BigInteger(n.bitCount(), random);
         BigInteger q=ONE;
 
-        y=z;
+        BigInteger y = z;
         
         do {
             x=y;
             for (i=ONE;i.compareTo(r)<=0;i=i.add(ONE)) 
-                y= f(y, THREE, n);
+                y= f(y, n);
             k=ZERO;
             do {
                 if(task.isTimeout())
@@ -64,22 +64,22 @@ public class Factor_PollardRhoBrent implements FactorMethod {
                 // System.out.print("iter=" + iter.toString() + '\r');
                 ys=y;
                 for (i=ONE; i.compareTo(min(m,r.subtract(k))) <=0 ; i=i.add(ONE)) {
-                    y = f(y, THREE, n);
+                    y = f(y, n);
                     q = ((y.subtract(x)).multiply(q)).mod(n);
                 }
                 z = n.gcd(q);
                 k = k.add(m);
             } while (k.compareTo(r)<0 && z.compareTo(ONE)==0);
             r = r.multiply(TWO);
-        } while (z.compareTo(ONE)==0 && iter.compareTo(TENTHOUSAND)<0);
+        } while (z.compareTo(ONE)==0 && iter.compareTo(MAXITERS)<0);
 
         if (z.compareTo(n)==0)  {
             do {
-                ys = f(ys, THREE, n);
+                ys = f(ys, n);
                 z = n.gcd(ys.subtract(x));
             } while (z.compareTo(ONE)==0);
         }
-        if(z.equals(n)) {
+        if(z.equals(n) || z.equals(ONE)) {
             return null;
         }
         return z;
@@ -116,6 +116,8 @@ public class Factor_PollardRhoBrent implements FactorMethod {
                     divisor = factorizebrent(task, toFactor);
                     if(task.isTimeout())
                         return;
+                    if(divisor == null)
+                        continue;
                     if(!divisor.equals(toFactor))
                         break;
                     System.out.println(divisor);

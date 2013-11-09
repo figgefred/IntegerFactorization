@@ -14,31 +14,32 @@ import java.util.List;
 public class Main {
    
     public static boolean DEBUG = false;
-    public static long totalTimeout = 17000;
+    public static long totalTimeout = 17500;
+    public static Stopwatch globalTimer = new Stopwatch();
     
-    // Ingen sortering == 2 sek extra på kattis.
-    public static boolean ENABLE_SORT = false;
+    public static boolean Do_Division_First = true;
+    
+    public static int sieveLimit = 175000;
     
     //public static FactorMethod f = new Factor_PollardRho();
-//    public static FactorMethod f = new Factor_TrialDivision(500000);
-//    public static FactorMethod f = new Factor_TrialPollardRho(6000);
-//    public static FactorMethod f = new Factor_PerfectPollardRho();
-    //public static FactorMethod f = new Factor_TrialPerfectRho(16000);
-
+    //public static FactorMethod f = new Factor_TrialDivision(sieveLimit);
+    //public static FactorMethod f = new Factor_TrialPollardRho(sieveLimit);
+    //public static FactorMethod f = new Factor_PerfectPollardRho();
+    //public static FactorMethod f = new Factor_TrialPerfectRho(sieveLimit);
     
-    public static FactorMethod f = new Factor_TrialRhoBrent(300);
+    //public static FactorMethod f = new Factor_TrialRhoBrent(sieveLimit);
     //public static FactorMethod f = new Factor_PollardRhoBrent();
-//    public static FactorMethod f = new Factor_TrialPerfectRhoBrent(300);
-    //public static FactorMethod f = new Factor_PerfectRhoBrent();
+    //public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
+    public static FactorMethod f = new Factor_PerfectRhoBrent();
     
     public static void main(String args[]) throws IOException {
         
-        Stopwatch readingTimer = new Stopwatch();
+        
         BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
         List<Task> tasks = new ArrayList<>();
         String line = read.readLine();
         
-        readingTimer.start();
+        globalTimer.start();
         
         int i = 0;
         while(true) 
@@ -51,29 +52,11 @@ public class Main {
             tasks.add(t);
             line = read.readLine();
         }
-     
-        if(ENABLE_SORT)
-        	Collections.sort(tasks);
-        
-        Task[] results = new Task[tasks.size()];
-        int tasksleft = tasks.size();
-        long timeleft = totalTimeout - readingTimer.milliseconds();
-        dPrintln("Time left for work is " + timeleft + "ms");
-        for(Task t: tasks)
-        {
-        	
-            long timeout = getNextTimeoutDuration(timeleft, tasksleft);
-            t.setNewTimout(new Timing(timeout));
-            dPrint("Task-" + t.index + "(" + t.initial + ") was allocated " + timeout + "ms working time" );
-            // Work!
-            f.factor(t);
-            
-            t.timer.stop();
-            results[t.index] = t;            
-            timeleft -= t.getExecutionTime();
-            dPrintln("Task-" + t.index + " executed for " + t.getExecutionTime() + "ms");
-            tasksleft--;
-        }
+        Task[] results;
+        if(Do_Division_First)
+            results = doWorkDivFirst(tasks);
+        else
+            results = doWork(tasks);
         
         printResults(results);
         
@@ -90,9 +73,48 @@ public class Main {
                 }
             }
             dPrintln("Finished " + finished + "/"+ results.length);
-            dPrintln("Executed for " + readingTimer.stop().milliseconds() + "ms");
+            dPrintln("Executed for " + globalTimer.stop().milliseconds() + "ms");
         }
+        
+        
     }
+    
+    public static Task[] doWorkDivFirst(List<Task> tasks)
+    {
+        FactorMethod fStart = new Factor_TrialDivision(sieveLimit);
+        
+        for(Task task:tasks)
+        {
+            fStart.factor(task);
+        }
+        Task[] results = doWork(tasks);
+        return results;
+    }
+    
+    public static Task[] doWork(List<Task> tasks)
+    {
+        Task[] results = new Task[tasks.size()];
+        int tasksleft = tasks.size();
+        long timeleft = totalTimeout - globalTimer.milliseconds();
+        dPrintln("Time left for work is " + timeleft + "ms");
+        for(Task t: tasks)
+        {
+        	
+            long timeout = getNextTimeoutDuration(timeleft, tasksleft);
+            t.setNewTimout(new Timing(timeout));
+            dPrint("Task-" + t.index + "(" + t.initial + ") was allocated " + timeout + "ms working time" );
+            // Work!
+            f.factor(t);
+            
+            t.timer.stop();
+            results[t.index] = t;            
+            timeleft -= t.getExecutionTime();
+            dPrintln("Task-" + t.index + " executed for " + t.getExecutionTime() + "ms");
+            tasksleft--;
+        }
+        return results;
+    }
+    
     
     public static void printResults(Task[] tasks)
     {

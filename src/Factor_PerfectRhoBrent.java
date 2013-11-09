@@ -26,18 +26,20 @@ protected Factor_PerfectGeometry geo = new Factor_PerfectGeometry();
 
                     BigInteger toFactor = task.poll();
                     BigInteger divisor;
-                    for(int i = 0; ; i++)
+                    while(true)
                     {
                             divisor = factorizebrent(task, toFactor);
                             if(task.isTimeout())
                                 return;
+                            if(divisor  == null)
+                                continue;
                             if(!divisor.equals(toFactor))
                                     break;
                     }
                     if(divisor.isProbablePrime(20))
                     {
                             task.setPartResult(divisor);
-                    } else {
+                    } else if(!divisor.equals(BigInteger.ONE)) {
                             task.push(divisor); 
                     }
 
@@ -45,7 +47,7 @@ protected Factor_PerfectGeometry geo = new Factor_PerfectGeometry();
                     if(quo.isProbablePrime(20))
                     {
                             task.setPartResult(quo);
-                    } else {
+                    } else if(!divisor.equals(BigInteger.ONE)) {
                             task.push(quo);
                     }  
 

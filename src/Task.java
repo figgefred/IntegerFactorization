@@ -80,6 +80,8 @@ public class Task implements Comparable<Task>  {
     
     public boolean isTimeout()
     {
+        if(timer == null)
+            return false;
         return timer.timedout();
     }
     
