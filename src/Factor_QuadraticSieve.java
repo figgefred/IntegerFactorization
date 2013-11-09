@@ -143,6 +143,12 @@ public class Factor_QuadraticSieve implements FactorMethod {
 //        }
 //        System.out.println(toFactor);
         
+    	if(N.isProbablePrime(20)) {
+    		task.setPartResult(N);
+    		return;
+    	}
+    		
+    	
         // Step 3 - is 'N' perfect exponent?
         // Step over
         if(perfectGeo.factor(task, N))
@@ -150,8 +156,10 @@ public class Factor_QuadraticSieve implements FactorMethod {
         
         // Step 4 - Find smoothness value: O(e^(0.5*sqrt(logNloglogN))
         BigInteger B = getSmoothnessValue(N);
-//        System.out.println(B);
-//        System.out.println();
+      
+        System.out.println("# Smoothness value:");
+        System.out.println(B);
+        System.out.println();
         
         // Step 5 - Determine factor base, primes where N / P = 1
         BigInteger lastPrime = BigInteger.valueOf(sieve.getPrimes().get(sieve.getPrimes().size() - 1));
@@ -159,9 +167,10 @@ public class Factor_QuadraticSieve implements FactorMethod {
         	throw new RuntimeErrorException(null, "herpetyderp: not enough primes!");
         
         List<BigInteger> factorBase = new ArrayList<>();
+        System.out.println("# Factor base:");
         for(int prime : this.sieve.getPrimes()) {
         	BigInteger p = BigInteger.valueOf(prime);
-        	if(p.compareTo(B) > -1)
+        	if(p.compareTo(B) > 0)
         		break;
         	
         	// Solve for n = x2 mod p = q mod p        	   
@@ -170,25 +179,31 @@ public class Factor_QuadraticSieve implements FactorMethod {
         	// http://en.wikipedia.org/wiki/Legendre_symbol
         	if(legendre_symbol(N, p) == 1) {
         		factorBase.add(p);
-//        		System.out.println(p);
+        		System.out.println(p);
         	}
         }        
+        System.out.println("# End of factor base");
         
 //        System.out.println();
         // Step 6 - Determine nrootceil (fulhack med string?)
-        BigInteger nrootceil = BigMath.sqrt(new BigDecimal(N.toString())).toBigInteger().add(BigInteger.ONE); // Fred förstår inte. Men jag gör det.
-//        System.out.println(nrootceil);
+        BigInteger nrootceil = BigMath.sqrt(new BigDecimal(N.toString())).setScale(0, RoundingMode.CEILING).toBigInteger(); // Fred förstår inte. Men jag gör det.
+        System.out.println("# nRoot:");
+        System.out.println(nrootceil);
+        System.out.println();
 //        System.out.println();
-        BigInteger[] V = new BigInteger[100]; // 100?!?!?
+        System.out.println("# Q values");
+        BigInteger[] V = new BigInteger[60]; // 100?!?!?
+        BigInteger[] Qs = new BigInteger[V.length];
         for(int i = 0; i < V.length; i++)
         {
         	V[i] = Q(BigInteger.valueOf(i), nrootceil, N);
-//        	System.out.println(V[i]);
+        	Qs[i] = V[i];
+        	System.out.println(BigInteger.valueOf(i) + " " + V[i]);
         }
+        System.out.println();
         
-        // Special case for 2
-        
-        
+        System.out.println();
+        System.out.println("# x2 = n mod p values:");
     	for(int x = 0 ; x < factorBase.size(); x++)
     	{
     		BigInteger prime = factorBase.get(x);
@@ -196,34 +211,40 @@ public class Factor_QuadraticSieve implements FactorMethod {
     		BigInteger[] results = tonelli_shanks(N.mod(prime), prime);
     		
     		for(BigInteger result : results) {
-    			int startindex = result.intValue() - nrootceil.intValue() % prime.intValue();
-    			
+    			System.out.println(prime + " tonnelli: " + result);
+    			int startindex = result.intValue() - nrootceil.intValue() % prime.intValue();  
+    			System.out.println(prime + " (before) " + startindex);
     			while(startindex < 0)
     				startindex += prime.intValue();
-    			System.out.println(startindex + " " + prime.intValue());
-    			for(int i = startindex; i < V.length; i += prime.intValue())    		
-    				V[i] = V[i].divide(prime);
+    			System.out.println(prime + " (after) " + startindex);
+    			System.out.println();
+    			for(int i = startindex; i < V.length; i += prime.intValue())    
+    				while(V[i].mod(prime).equals(BigInteger.ZERO))
+    					V[i] = V[i].divide(prime);
     		}
     	}
+    	System.out.println("# end");
+    	System.out.println();
     	
     	List<BigInteger> ys = new ArrayList<BigInteger>();
     	List<BigInteger> is = new ArrayList<BigInteger>();
+    	System.out.println("# Vs found:");
     	for(int i = 0; i < V.length; i++)
         {
     		if(V[i].equals(BigInteger.ONE)) {
-    			BigInteger q = Q(BigInteger.valueOf(i), nrootceil, N);
-    			System.out.println("# Vs found:");
-    			System.out.println(i);
-    			System.out.println(q);
+    			BigInteger q = Qs[i];
+    			System.out.println((i+nrootceil.intValue()) + " " + V[i] + " " + q);
+    			
     			
     			ys.add(q);
     			is.add(BigInteger.valueOf(i).add(nrootceil));
     		}
         }
-    	
-    	System.out.println(ys.size());
-    	
+    	System.out.println("# End of vs");
     	System.out.println();
+    	
+   
+    	System.out.println("# Matrix:");
     	// Whoa
 //    	int[][] matrix = new int[ys.size()][factorBase.size()];
     	int[] matrix = new int[factorBase.size()];
@@ -243,23 +264,34 @@ public class Factor_QuadraticSieve implements FactorMethod {
 //    			System.out.println("e" + e);
 
     			if(e % 2 == 1) {
-    				matrix[i] |= (1 << j);    			
+    				matrix[i] |= (1 << j);
+    				System.out.print(1);
+    			} else {
+    				System.out.print(0);
     			}
     			
 
     		}
-//	    	System.out.println("a");
+	    	System.out.println();
+	    	System.out.println();
 //	    	System.out.println(matrix[i]);    		
     	}
+		System.out.println("#EOF matrix");
     	System.out.println();
     	
     	// Bit magic?
     	
 		int v = 0;
 		brutus:
-    	for(v = 0; v < Math.pow(2, ys.size()); v++) {   	
-    		for(int i = 0; i < factorBase.size(); i++) {	    		
-	    		if((matrix[i] ^ v & matrix[i]) != 0)
+    	for(v = 1; v < Math.pow(2, ys.size()); v++) {   
+    		
+    		
+    		for(int i = 0; i < factorBase.size(); i++) {
+    			int sum = 0;
+    			for(int j = 0; j < ys.size(); j++) {
+    				sum ^= (matrix[i] & (1 << j)) > 0 ? 1 : 0;
+    			}
+	    		if(sum > 0)
 	    			continue brutus;
     		}
     		break;
@@ -278,33 +310,46 @@ public class Factor_QuadraticSieve implements FactorMethod {
 			prod2 = prod2.multiply(is.get(i).pow(2));
 		}
 		
+		System.out.println("# Products found:");
 		System.out.println(prod1);
 		System.out.println(prod2);
     	
+		
 //        BigInteger factor = perfectGeo.getPowRoot(prod2, 2).subtract(perfectGeo.getPowRoot(prod1, 2)).abs();
 		BigInteger factor = BigMath.isqrt(prod2).subtract(BigMath.isqrt(prod1)).abs();
-        System.out.println(factor);
+        
         factor = factor.gcd(N);
-        System.out.println(factor);
+
         
         BigInteger quo = N.divide(factor);
         if(factor.isProbablePrime(20)) {
-        	System.out.println("Nu lägger jag till " + factor + " som ett primtal!");
+        	System.out.println("# Nu lägger jag till " + factor + " som ett primtal!");
         	task.setPartResult(factor);
-        } else {
+        } else if(!factor.equals(BigInteger.ONE)) {
+        	System.out.println("# Adding factor to queue: " + factor);
         	task.push(factor);
         }
         
         if(quo.isProbablePrime(20)) {
+        	System.out.println("# Nu lägger jag  (qup) till " + quo + " som ett primtal!");
         	task.setPartResult(quo);
-        } else {
+        } else if(!quo.equals(BigInteger.ONE)) {
+        	System.out.println("# Adding quo to queue: " + quo);
         	task.push(quo);
         }
+        
+        System.out.println("# Current results:");
+        for(BigInteger result : task.getResults()) 
+        	System.out.println(result);
+        System.out.println();
+        System.out.println();
        
     }
     //  Q(x) = (√N + x)^2 − N
     public BigInteger Q(BigInteger x, BigInteger nrootceil, BigInteger toFactor) {
     	//perfectGeo.getPowRoot(x, k)
+    	// nrootceil.add
+    	//.mod(toFactor);
     	return nrootceil.add(x).pow(2).subtract(toFactor);
     }
     
@@ -312,6 +357,7 @@ public class Factor_QuadraticSieve implements FactorMethod {
     public void factor(Task task) {
     	while(!task.isFinished()) {
     		factor(task, task.poll());
+    		return;
     	}
     }
     
@@ -331,8 +377,12 @@ public class Factor_QuadraticSieve implements FactorMethod {
     
     public static void main(String[] args)
     {
-    	BigInteger b = new BigInteger("15349");
+//    	BigInteger b = new BigInteger("15347");
+//    	BigInteger b = new BigInteger("87463");
+//    	BigInteger b = new BigInteger("90283");
+//    	BigInteger b = new BigInteger("90283");
 //        BigInteger b = new BigInteger("138");
+    	BigInteger b = new BigInteger("16843009");
         //BigDecimal d = new BigDecimal("87");
         //d.setScale(10000, RoundingMode.UP);
         
@@ -340,7 +390,11 @@ public class Factor_QuadraticSieve implements FactorMethod {
         
 //        System.out.println(f.getSmoothnessValue(b));
         
+        BigInteger t1 = new BigInteger("18546971").gcd(b);
+        BigInteger t2 = new BigInteger("23264411").gcd(b);
         
+        System.out.println(t1);
+        System.out.println(t2);
         
         Task t = new Task(0, b, new Timing(200000));
 //        BigInteger n = new BigInteger("13");
