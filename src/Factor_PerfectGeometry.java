@@ -106,6 +106,10 @@ public class Factor_PerfectGeometry implements FactorMethod {
 		    {
 		        System.out.println(val);
 		    }
+	    else {
+	    	for(BigInteger val : t.getTodo())
+	    		System.out.println(val);
+	    }
 	}
 
 }

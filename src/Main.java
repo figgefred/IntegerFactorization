@@ -13,24 +13,24 @@ import java.util.List;
  */
 public class Main {
    
-    public static boolean DEBUG = false;
+    public static boolean DEBUG = true;
     public static long totalTimeout = 17500;
     public static Stopwatch globalTimer = new Stopwatch();
     
-    public static boolean Do_Division_First = true;
+    public static boolean Do_Division_First = true; //true;
     
     public static int sieveLimit = 500;
     
     //public static FactorMethod f = new Factor_PollardRho();
     //public static FactorMethod f = new Factor_TrialDivision(sieveLimit);
     //public static FactorMethod f = new Factor_TrialPollardRho(sieveLimit);
-    //public static FactorMethod f = new Factor_PerfectPollardRho();
+//    public static FactorMethod f = new Factor_PerfectPollardRho();
     //public static FactorMethod f = new Factor_TrialPerfectRho(sieveLimit);
     
-    //public static FactorMethod f = new Factor_TrialRhoBrent(sieveLimit);
-    public static FactorMethod f = new Factor_PollardRhoBrent();
-    //public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
-    //public static FactorMethod f = new Factor_PerfectRhoBrent();
+//    public static FactorMethod f = new Factor_TrialRhoBrent(sieveLimit);
+//    public static FactorMethod f = new Factor_PollardRhoBrent();
+//    public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
+    public static FactorMethod f = new Factor_PerfectRhoBrent();
     
     public static void main(String args[]) throws IOException {
         

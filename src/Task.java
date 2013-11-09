@@ -33,6 +33,10 @@ public class Task implements Comparable<Task>  {
         timer = t; // Is ok can be set later
     }
     
+    public Queue<BigInteger> getTodo() {
+    	return toFactor;
+    }
+    
     public BigInteger poll() {
     	return toFactor.poll();
     }

@@ -33,14 +33,19 @@ protected Factor_PerfectGeometry geo = new Factor_PerfectGeometry();
                                 return;
                             if(divisor  == null)
                                 continue;
-                            if(!divisor.equals(toFactor))
-                                    break;
+//                            if(!divisor.equals(toFactor))
+//                                    break;
+                            break;
                     }
+                    
                     if(divisor.isProbablePrime(20))
                     {
-                            task.setPartResult(divisor);
+                        task.setPartResult(divisor);
                     } else if(!divisor.equals(BigInteger.ONE)) {
-                            task.push(divisor); 
+                        task.push(divisor); 
+                    } else {
+                    	task.push(toFactor);
+                    	continue;
                     }
 
                     BigInteger quo = toFactor.divide(divisor);

@@ -18,7 +18,7 @@ public class Factor_PollardRhoBrent implements FactorMethod {
     private BigInteger ONE = BigInteger.ONE;
     private BigInteger ZERO = BigInteger.ZERO;
     
-    private BigInteger MAXITERS = new BigInteger("10000");
+    private BigInteger MAXITERS = new BigInteger("100000000");
     
     private Random random = new Random(1337);
     
@@ -29,64 +29,126 @@ public class Factor_PollardRhoBrent implements FactorMethod {
     
     public BigInteger factorizebrent(Task task, BigInteger n) {
         
-        if(n.mod(TWO).equals(ZERO))
-        {
-            return TWO;
-        }
+//        if(n.mod(TWO).equals(ZERO))
+//        {
+//            return TWO;
+//        }
         
-        BigInteger k = null;
-        BigInteger i = null;
         BigInteger x = null;
-        BigInteger ys = null;
 
-        long tmp =(long) random.nextInt(10)+1; 
-        BigInteger m = BigInteger.valueOf(tmp);
-        BigInteger r=ONE;
-        BigInteger iter=ZERO;
-        BigInteger z=new BigInteger(n.bitCount(), random);
+        int m = random.nextInt(100)+1; 
+//        
+        int r= 1;    
+        BigInteger z = new BigInteger(n.bitCount(), random);
         BigInteger q=ONE;
-        
-        
         BigInteger C = new BigInteger(n.bitCount(), random);
-
         BigInteger y = z;
-        
-        do {
+   
+        do {        	
+        	
             x=y;
-            for (i=ONE;i.compareTo(r)<=0;i=i.add(ONE)) 
-                y= f(y, C, n);
-            k=ZERO;
-            do {
-                if(task.isTimeout())
+            for (int i = 0; i <= r; ++i) 
+                y = y.multiply(y).add(C).mod(n); 
+            
+            int k = 0;
+            do {    
+            	if(task.isTimeout())
                 {
                     return null;
                 }
                 
-                iter=iter.add(ONE);
-                // System.out.print("iter=" + iter.toString() + '\r');
-                ys=y;
-                for (i=ONE; i.compareTo(min(m,r.subtract(k))) <=0 ; i=i.add(ONE)) {
-                    y = f(y, C, n);
-                    q = ((y.subtract(x)).multiply(q)).mod(n);
+                int rk =  Math.min(m, r-k);
+                for (int i=1; i <= rk; ++i) {
+                    y = y.multiply(y).add(C).mod(n); 
+                    q = y.subtract(x).multiply(q).mod(n);
                 }
+                
                 z = n.gcd(q);
-                k = k.add(m);
-            } while (k.compareTo(r)<0 && z.compareTo(ONE)==0);
-            r = r.multiply(TWO);
-        } while (z.compareTo(ONE)==0 && iter.compareTo(MAXITERS)<0);
+                k += m;
+            } while (k < r && z.compareTo(ONE) == 0);
+            r = r*2;
+            
+            
+        } while (z.compareTo(ONE)==0);
 
-        if (z.compareTo(n)==0)  {
-            do {
-                ys = f(ys, C, n);
-                z = n.gcd(ys.subtract(x));
-            } while (z.compareTo(ONE)==0);
-        }
-        if(z.equals(n) || z.equals(ONE)) {
-            return null;
-        }
+//        if(z.equals(ONE)) {
+//            return null;
+//        }
+        
+//        if (z.compareTo(n)==0)  {
+//        	return null;
+////            do {
+////                ys = ((y.multiply(y)).add(C)).mod(n); 
+////                z = n.gcd(ys.subtract(x));
+////            } while (z.compareTo(ONE)==0);
+//        }
+        
         return z;
     }
     
+//    public BigInteger factorizebrent(Task task, BigInteger n) {
+//        
+//        if(n.mod(TWO).equals(ZERO))
+//        {
+//            return TWO;
+//        }
+//        
+////        BigInteger k = null;
+////        BigInteger i = null;
+//        BigInteger x = null;
+//        BigInteger ys = null;
+//
+//        int m = random.nextInt(10)+1; 
+////        BigInteger m = BigInteger.valueOf(tmp);
+//        int r= 1;    
+//        BigInteger z=new BigInteger(n.bitCount(), random);
+//        BigInteger q=ONE;
+//        
+//        
+//        BigInteger C = new BigInteger(n.bitCount(), random);
+//
+//        BigInteger y = z;
+//        
+//        do {
+//            x=y;
+//            for (int i = 0; i <= r; ++i) 
+//                y = y.multiply(y).add(C).mod(n); 
+//            
+//            int k = 0;
+//            do {
+//                if(task.isTimeout())
+//                {
+//                    return null;
+//                }
+//                
+//                // System.out.print("iter=" + iter.toString() + '\r');
+////                ys=y;
+//                int rk = r-k;
+//                for (int i=1; i <= Math.min(m, rk); ++i) {
+//                    y = y.multiply(y).add(C).mod(n); 
+//                    q = ((y.subtract(x)).multiply(q)).mod(n);
+//                }
+//                z = n.gcd(q);
+//                k += m;
+//            } while (k < r && z.compareTo(ONE) == 0);
+//            r = r*2;
+//        } while (z.compareTo(ONE)==0);
+//
+////        if(z.equals(ONE)) {
+////            return null;
+////        }
+//        
+//        if (z.compareTo(n)==0)  {
+//        	return null;
+////            do {
+////                ys = ((y.multiply(y)).add(C)).mod(n); 
+////                z = n.gcd(ys.subtract(x));
+////            } while (z.compareTo(ONE)==0);
+//        }
+//        
+//        return z;
+//    }
+//    
     private BigInteger min(BigInteger v1, BigInteger v2)
     {
         if(v1.compareTo(v2) > 1)
