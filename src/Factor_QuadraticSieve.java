@@ -170,7 +170,7 @@ public class Factor_QuadraticSieve implements FactorMethod {
         System.out.println("# Factor base:");
         for(int prime : this.sieve.getPrimes()) {
         	BigInteger p = BigInteger.valueOf(prime);
-        	if(p.compareTo(B) > 0)
+        	if(p.compareTo(B) > -1)
         		break;
         	
         	// Solve for n = x2 mod p = q mod p        	   
@@ -192,7 +192,7 @@ public class Factor_QuadraticSieve implements FactorMethod {
         System.out.println();
 //        System.out.println();
         System.out.println("# Q values");
-        BigInteger[] V = new BigInteger[60]; // 100?!?!?
+        BigInteger[] V = new BigInteger[100]; // 100?!?!?
         BigInteger[] Qs = new BigInteger[V.length];
         for(int i = 0; i < V.length; i++)
         {
@@ -246,14 +246,18 @@ public class Factor_QuadraticSieve implements FactorMethod {
    
     	System.out.println("# Matrix:");
     	// Whoa
-//    	int[][] matrix = new int[ys.size()][factorBase.size()];
-    	int[] matrix = new int[factorBase.size()];
     	
-		for(int i = 0; i < factorBase.size(); i++) {
-			BigInteger prime = factorBase.get(i);
+    	int rows = factorBase.size();
+    	int cols = ys.size();
+//    	double[][] ematrix = new double[ys.size()][factorBase.size()];
+    	double[][] matrix = new double[rows][cols];
+    	
+		for(int i = 0; i < rows; i++) {			
 			
-	    	for(int j = 0; j < ys.size(); j++) {
+			
+	    	for(int j = 0; j < cols; j++) {	
 	    		BigInteger tmp = ys.get(j);
+	    		BigInteger prime = factorBase.get(i);
 	    		
     			int e = 0;    			
     			while(tmp.mod(prime).equals(BigInteger.ZERO)) {
@@ -261,55 +265,77 @@ public class Factor_QuadraticSieve implements FactorMethod {
     				e++;
     			}
     			
-//    			System.out.println("e" + e);
-
-    			if(e % 2 == 1) {
-    				matrix[i] |= (1 << j);
-    				System.out.print(1);
-    			} else {
-    				System.out.print(0);
-    			}
+//    			ematrix[i][j] = e;
+    			matrix[i][j] = e % 2;
     			
-
+    			System.out.print(matrix[i][j]);
     		}
-	    	System.out.println();
+	    	
 	    	System.out.println();
 //	    	System.out.println(matrix[i]);    		
     	}
 		System.out.println("#EOF matrix");
     	System.out.println();
     	
-    	// Bit magic?
+//    	System.out.println("#E matrix");
+//    	for(int i = 0; i < ys.size(); i++) {
+//    		for(int j = 0; j < factorBase.size(); j++) {
+//    			System.out.print(ematrix[i][j]);
+//    		}
+//    		System.out.println();
+//    	}
+//    	System.out.println();
     	
-		int v = 0;
-		brutus:
-    	for(v = 1; v < Math.pow(2, ys.size()); v++) {   
-    		
-    		
-    		for(int i = 0; i < factorBase.size(); i++) {
-    			int sum = 0;
-    			for(int j = 0; j < ys.size(); j++) {
-    				sum ^= (matrix[i] & (1 << j)) > 0 ? 1 : 0;
-    			}
-	    		if(sum > 0)
-	    			continue brutus;
-    		}
-    		break;
+    	// Gauss elimination
+//    	for(int k = 0; k < factorBase.size() && k < ys.size(); k++) {
+//    		// find pivot
+//    		int maxi = 0;
+//    		for(int i = k; i < ys.size(); ++i) { // m = factorBase.size()?
+//    			if(matrix[i][k] == 1)
+//    			{
+//    				maxi = i;
+//    				break;
+//    			}
+//    		}
+//    		if(matrix[maxi][k] == 1) {
+////    			throw new RuntimeException("Singular matrix");
+//    		
+//    		swap_rows(matrix[k], matrix[maxi]);
+//    		
+//    		for(int i = k+1; i < ys.size(); i++)
+//    		{
+//    			for(int j = k; j < factorBase.size(); j++)
+//    			{
+//    				matrix[i][j] = matrix[i][j] - matrix[k][j] * (matrix[i][k] / matrix[k][k]); 
+//    			}
+//    			matrix[i][k] = 0;
+//    		}   
+//    		}
+//    	}
+    	double[] nulls = new double[factorBase.size()]; 
+    	double[] x = GaussianElimination.solve(matrix, nulls);
+    	
+    	for(int i = 0; i < x.length; i++)
+    	{
+    		System.out.print(x[i]);
     	}
-		System.out.println(v);
+    	System.out.println();
+    	
+//    	System.out.println("# Gauss eliminated?");
+//    	for(int[] row : matrix) {
+//    		for(int col : row)
+//    		{
+//    			System.out.print(col);
+//    		}
+//    		System.out.println();
+//    	}
+    	
+
     	System.out.println();
     	
 		BigInteger prod1 = BigInteger.ONE;
 		BigInteger prod2 = BigInteger.ONE;
-		
-		for(int i = 0; i < ys.size(); i++) {
-			if(((1 << i) & v) == 0)
-				continue;
-			System.out.println(ys.get(i));
-			prod1 = prod1.multiply(ys.get(i));
-			prod2 = prod2.multiply(is.get(i).pow(2));
-		}
-		
+
 		System.out.println("# Products found:");
 		System.out.println(prod1);
 		System.out.println(prod2);
@@ -345,6 +371,18 @@ public class Factor_QuadraticSieve implements FactorMethod {
         System.out.println();
        
     }
+	
+	public void swap_rows(int[] row1, int[] row2) {
+		if(row1.length != row2.length)
+			throw new IllegalArgumentException("different row sizes");		
+		
+		for(int i = 0; i < row1.length; i++) {
+			int tmp = row1[i];
+			row1[i] = row2[i];
+			row2[i] = tmp;
+		}
+	}
+
     //  Q(x) = (√N + x)^2 − N
     public BigInteger Q(BigInteger x, BigInteger nrootceil, BigInteger toFactor) {
     	//perfectGeo.getPowRoot(x, k)
@@ -377,12 +415,12 @@ public class Factor_QuadraticSieve implements FactorMethod {
     
     public static void main(String[] args)
     {
-//    	BigInteger b = new BigInteger("15347");
+    	BigInteger b = new BigInteger("15347");
 //    	BigInteger b = new BigInteger("87463");
 //    	BigInteger b = new BigInteger("90283");
 //    	BigInteger b = new BigInteger("90283");
 //        BigInteger b = new BigInteger("138");
-    	BigInteger b = new BigInteger("16843009");
+//    	BigInteger b = new BigInteger("16843009");
         //BigDecimal d = new BigDecimal("87");
         //d.setScale(10000, RoundingMode.UP);
         
@@ -390,11 +428,15 @@ public class Factor_QuadraticSieve implements FactorMethod {
         
 //        System.out.println(f.getSmoothnessValue(b));
         
-        BigInteger t1 = new BigInteger("18546971").gcd(b);
-        BigInteger t2 = new BigInteger("23264411").gcd(b);
+        BigInteger x = new BigInteger("22678");
+        BigInteger y = new BigInteger("195").pow(2);
+        
+        BigInteger t1 = y.subtract(x).gcd(b);
+        BigInteger t2 = x.add(y).gcd(b);
         
         System.out.println(t1);
         System.out.println(t2);
+        System.out.println();
         
         Task t = new Task(0, b, new Timing(200000));
 //        BigInteger n = new BigInteger("13");
