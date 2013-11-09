@@ -5,7 +5,14 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 import javax.imageio.IIOException;
 import javax.management.RuntimeErrorException;
@@ -252,20 +259,7 @@ public class Factor_QuadraticSieve implements FactorMethod {
    
     	System.out.println("# Matrix voodoo:");
     	System.out.println();
-    	xRes = doGaussMagic(ys, factorBase);
-    	if(xRes == null)
-    	{
-    		magicIntervalConstant += magicIntervalConstant/2;
-    		continue redo;
-    	}
-    	else
-    	{
-    		System.out.println("# Matrix X");
-    		System.out.println();
-    		printMatrix(xRes);
-    		System.out.println("# END Matrix X");
-    		System.out.println();
-    	}
+    	xRes = setupMatrix(ys, factorBase);
     	System.out.println("# END Matrix voodoo");
     	System.out.println();
     	
@@ -340,7 +334,37 @@ public class Factor_QuadraticSieve implements FactorMethod {
         } 
         return factorBase;
 	}
-
+	
+	private Matrix setupMatrix(List<BigInteger> ys, List<BigInteger> factorBase) {
+    	// Whoa
+    	
+		
+		System.out.println("# Init matrix A");
+		System.out.println();
+    	Matrix A = new Matrix(ys.size(), factorBase.size());
+		for(int i = 0; i < A.rowCount(); i++) {			
+	    	for(int j = 0; j < A.colCount(); j++) {
+	    		BigInteger tmp = ys.get(i);
+	    		BigInteger prime = factorBase.get(j);
+	    		
+    			int e = 0;    			
+    			while(tmp.mod(prime).equals(BigInteger.ZERO)) {
+    				tmp = tmp.divide(prime);
+    				e++;
+    			}
+    			
+//    			ematrix[i][j] = e;
+    			A.set(i, j, e );
+    		}
+	    	
+//	    	System.out.println(matrix[i]);    		
+    	}
+		printMatrix(A);
+		
+		System.out.println("# END matrix A");
+    	System.out.println();
+    	return A;
+	}
 	private Matrix doGaussMagic(List<BigInteger> ys, List<BigInteger> factorBase) {
     	// Whoa
     	
@@ -475,6 +499,123 @@ public class Factor_QuadraticSieve implements FactorMethod {
         return s.toBigInteger();
     }
     
+    public BigInteger[] findEquation(List<BigInteger> smoothNumbers, List<BigInteger> Qs, Matrix exponentsMatrix, List<BigInteger> factorBase, BigInteger target) {
+    	Queue<BigInteger> products = new LinkedList<>();
+    	Queue<Integer[]> exponentsQueue = new LinkedList<Integer[]>(); 
+    	Queue<Set<BigInteger>> visitedQueue = new LinkedList<Set<BigInteger>>();
+    	
+//    	Set<BigInteger> visited = new HashSet<>();
+    	
+    	Map<BigInteger, Integer[]> savedExponents = new HashMap<BigInteger, Integer[]>();
+    	
+    	for(int i = 0; i < smoothNumbers.size(); i++) {
+    		BigInteger smooth = smoothNumbers.get(i);
+    		products.add(smooth);
+    		Integer[] exponents = new Integer[factorBase.size()];
+    		for(int e = 0; e < factorBase.size(); e++)
+    			exponents[e] = (int) exponentsMatrix.get(i, e);
+    		exponentsQueue.add(exponents);
+    		savedExponents.put(smooth, exponents);
+    		HashSet<BigInteger> visited = new HashSet<BigInteger>();
+    		visited.add(smooth);
+    		visitedQueue.add(visited);
+    	}
+
+    	while(!products.isEmpty()) {
+    		BigInteger product = products.poll();
+    		Integer[] exponents = exponentsQueue.poll();
+    		Set<BigInteger> visited = visitedQueue.poll();
+    		System.out.println(product);
+    	
+    		for(BigInteger smooth : smoothNumbers) {
+    			if(visited.contains(smooth))
+    				continue;
+    			Set<BigInteger> newVisited = new HashSet<BigInteger>();
+    			newVisited.add(smooth);
+    			for(BigInteger b : visited)
+    				newVisited.add(b);
+//    			if(product.mod(smooth).equals(BigInteger.ZERO))
+//    				continue;    			
+    			BigInteger newProd = smooth.multiply(product);
+    		
+    			
+    			Integer[] savedExponent = savedExponents.get(smooth);
+    			Integer[] newExponents = new Integer[factorBase.size()];
+    			for(int e = 0; e < factorBase.size(); e++)
+    			{
+    				newExponents[e] = savedExponent[e] + exponents[e];
+    			}
+    			System.out.println(Arrays.toString(newExponents));
+    			
+    			//check if each exponent mod 2 == 0, if so break.
+    			boolean allMod2 = true;
+    			for(int e = 0; e < factorBase.size(); e++) {
+    				allMod2 = allMod2 && (newExponents[e] % 2 == 0);
+    				if(!allMod2)
+    					break;
+    			}
+    			
+    			if(allMod2) {
+    				System.out.println("Trying: " + product + " * " + smooth + " = " + newProd);
+    				BigInteger[] result = new BigInteger[2];  
+    				 
+    				BigInteger y = BigInteger.ONE;    				 
+					for(int i = 0; i < factorBase.size(); i++) {
+						BigInteger f = factorBase.get(i);				
+						y = y.multiply(f.pow(newExponents[i] / 2));					
+					}				
+					
+//					result[1] = perfectGeo.getPowRoot(result[1], 2);
+					System.out.println("x: " + newProd);
+					System.out.println("y: " + y);		
+					
+					// Try for gcd.
+					result[0] = newProd.subtract(y).gcd(target);
+					result[1] = newProd.add(y).gcd(target);
+					System.out.println("Result0,0: " + result[0]);
+					System.out.println("Result0,1: " + result[1]);
+					if(result[0].compareTo(BigInteger.ONE) == 1 && result[0].isProbablePrime(20))
+					{
+						return result;
+					}					
+					
+					y = BigInteger.ONE;    				 
+					for(int i = 0; i < Qs.size(); i++) {
+						BigInteger f = factorBase.get(i);				
+						if(newVisited.contains(smoothNumbers.get(i)))
+							y = y.multiply(Qs.get(i).pow(2));					
+					}		
+					y = perfectGeo.getPowRoot(y, 2);
+					BigInteger x = perfectGeo.getPowRoot(newProd, 2);
+					
+					result[0] = y.subtract(x).gcd(target);
+					result[1] = result[0];
+					System.out.println("Result1,0: " + result[0]);
+					System.out.println("Result1,1: " + result[1]);
+					
+					if(result[0].compareTo(BigInteger.ONE) == 1 && result[0].isProbablePrime(20))
+					{
+						return result;
+					}	
+					
+    			}
+    			
+    			
+    					
+    			products.add(newProd);
+    			exponentsQueue.add(newExponents);
+    			visitedQueue.add(newVisited);
+    			
+    		}    
+
+    	}
+    		
+    	
+    	
+    	
+    	return null;
+    }
+    
     public static void main(String[] args)
     {
     	BigInteger b = new BigInteger("15347");
@@ -507,21 +648,83 @@ public class Factor_QuadraticSieve implements FactorMethod {
         Task t = new Task(0, b, new Timing(200000));
 //        BigInteger n = new BigInteger("13");
 //        BigInteger p = new BigInteger("17");
-//        BigInteger[] results = f.tonelli_shanks(n.mod(p), p);
+//  smooth.add(new BigInteger("9"));      BigInteger[] results = f.tonelli_shanks(n.mod(p), p);
 //        System.out.println(results[0]);
 //        System.out.println(results[1]);
         
-        f.factor(t);
-        System.out.println();
-        System.out.println();
-        if(t.isFinished())
-		    for(BigInteger val: t.getResults())
-		    {
-		        System.out.println(val);
-		    }
+//        f.factor(t);
+//        System.out.println();
+//        System.out.println();
+//        if(t.isFinished())
+//		    for(BigInteger val: t.getResults())
+//		    {
+//		        System.out.println(val);
+//		    }
+//        
         
-        //BigInteger res = _BigIntegerMath.isqrt(b);
-        //System.out.println("sqrt(" + b.toString() + ") = " + res);
+//        BigInteger target = new BigInteger("15347");
+//        List<BigInteger> smooth = new ArrayList<BigInteger>();
+//        smooth.add(new BigInteger("29"));
+//        smooth.add(new BigInteger("782"));
+//        smooth.add(new BigInteger("22678"));
+//        List<BigInteger> Is = new ArrayList<BigInteger>();
+//        Is.add(new BigInteger("124"));
+//        Is.add(new BigInteger("127"));
+//        Is.add(new BigInteger("195"));
+//        List<BigInteger> factorBase = new ArrayList<BigInteger>();
+//        factorBase.add(new BigInteger("2"));
+//        factorBase.add(new BigInteger("17"));
+//        factorBase.add(new BigInteger("23"));
+//        factorBase.add(new BigInteger("29"));
+//        double exponents[][] = {
+//        		{0,0,0,1},
+//        		{1,1,1,0},
+//        		{1,1,1,1}
+//        };
+//        Matrix exMatrix = new Matrix(exponents);
+        
+        
+        BigInteger target = new BigInteger("16843009");
+        List<BigInteger> smooth = new ArrayList<BigInteger>();
+        smooth.add(new BigInteger("4122"));
+        smooth.add(new BigInteger("4159"));
+        smooth.add(new BigInteger("4187"));
+        smooth.add(new BigInteger("4241"));
+        smooth.add(new BigInteger("4497"));
+        smooth.add(new BigInteger("4993"));        
+        List<BigInteger> Is = new ArrayList<BigInteger>();
+        Is.add(new BigInteger("147875"));
+        Is.add(new BigInteger("454272"));
+        Is.add(new BigInteger("687960"));
+        Is.add(new BigInteger("1143072"));
+        Is.add(new BigInteger("3380000"));
+        Is.add(new BigInteger("8087040"));
+        List<BigInteger> factorBase = new ArrayList<BigInteger>();
+        factorBase.add(new BigInteger("2"));
+        factorBase.add(new BigInteger("3"));
+        factorBase.add(new BigInteger("5"));
+        factorBase.add(new BigInteger("7"));
+        factorBase.add(new BigInteger("13"));
+        double exponents[][] = {
+        		{0,0,3,1,2},
+        		{7,1,0,1,2},
+        		{3,3,1,2,1},
+        		{5,6,0,2,0},
+        		{5,0,4,0,2},
+        		{9,5,1,0,1}
+        };
+        Matrix exMatrix = new Matrix(exponents);
+        
+      
+        BigInteger[] result = f.findEquation(smooth, Is, exMatrix, factorBase, target);
+        System.out.println();
+        if(result != null) {
+        	System.out.println(result[0]);
+        	System.out.println(result[1]);
+        }
+//        System.out.println(result[0].subtract(result[1]).gcd(target));
+//        System.out.println(result[0].add(result[1]).gcd(target));
+        
     }
     
     private void printList(Object[] objs)
@@ -542,6 +745,7 @@ public class Factor_QuadraticSieve implements FactorMethod {
     	}
     }
     
+
     
     
 }
