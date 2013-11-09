@@ -1,14 +1,22 @@
+
 import java.math.BigInteger;
 
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
-public class Factor_TrialPerfectRho extends Factor_PerfectPollardRho {
+/**
+ *
+ * @author figgefred
+ */
+public class Factor_TrialPerfectRhoBrent extends Factor_PerfectRhoBrent {
+    protected FactorMethod trial;
 	
-    protected Factor_TrialDivision trial;
-	
-    public Factor_TrialPerfectRho(int primenumbers)
-    {
-    	trial = new Factor_TrialDivision(primenumbers);        
-    }
+        public Factor_TrialPerfectRhoBrent(int primenumbers)
+        {
+            trial = new Factor_TrialDivision(primenumbers);        
+        }
 
 	@Override
 	public void factor(Task task) {
@@ -16,7 +24,7 @@ public class Factor_TrialPerfectRho extends Factor_PerfectPollardRho {
 		
 		if(task.isTimeout() || task.isFinished())
 			return;
-		
+                
 		super.factor(task);
 	}
 	

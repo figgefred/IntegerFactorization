@@ -14,16 +14,22 @@ import java.util.List;
 public class Main {
    
     public static boolean DEBUG = false;
-    public static long totalTimeout = 18000;
+    public static long totalTimeout = 17000;
     
     // Ingen sortering == 2 sek extra på kattis.
     public static boolean ENABLE_SORT = false;
     
-//    public static FactorMethod f = new Factor_PollardRho();
+    //public static FactorMethod f = new Factor_PollardRho();
 //    public static FactorMethod f = new Factor_TrialDivision(500000);
 //    public static FactorMethod f = new Factor_TrialPollardRho(6000);
 //    public static FactorMethod f = new Factor_PerfectPollardRho();
-    public static FactorMethod f = new Factor_TrialPerfectRho(16000);
+    //public static FactorMethod f = new Factor_TrialPerfectRho(16000);
+
+    
+    public static FactorMethod f = new Factor_TrialRhoBrent(300);
+    //public static FactorMethod f = new Factor_PollardRhoBrent();
+//    public static FactorMethod f = new Factor_TrialPerfectRhoBrent(300);
+    //public static FactorMethod f = new Factor_PerfectRhoBrent();
     
     public static void main(String args[]) throws IOException {
         
@@ -77,6 +83,10 @@ public class Main {
             for (Task result : results) {
                 if (!result.isTimeout() && result.isFinished()) {
                     finished++;
+                }
+                else {
+                    dPrintln("FAILED: ");
+                    dPrintln("  " + result);
                 }
             }
             dPrintln("Finished " + finished + "/"+ results.length);

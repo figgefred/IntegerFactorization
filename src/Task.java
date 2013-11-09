@@ -83,6 +83,24 @@ public class Task implements Comparable<Task>  {
         return timer.timedout();
     }
     
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# Init: ").append(initial).append("\n");
+        sb.append("# Tasks: ").append("\n").append("  ");
+        for(BigInteger b: toFactor)
+        {
+            sb.append(b.toString()).append(" ");
+        }
+        sb.append("# Results: ").append("\n").append("  ");
+        for(BigInteger r: results)
+        {
+            sb.append(r.toString()).append(" ");
+        }
+        sb.append("\n");
+        return sb.toString();
+    }
+    
     
 
     @Override

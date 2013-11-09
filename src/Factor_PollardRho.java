@@ -71,7 +71,7 @@ public class Factor_PollardRho implements FactorMethod {
 		        if(task.isTimeout())
 		            return;
 		        if(!divisor.equals(toFactor))
-		        	break;
+                            break;
 	        }
 	        
 	        task.push(divisor);	   
