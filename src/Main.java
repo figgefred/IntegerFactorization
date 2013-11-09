@@ -19,7 +19,7 @@ public class Main {
     
     public static boolean Do_Division_First = true;
     
-    public static int sieveLimit = 175000;
+    public static int sieveLimit = 500;
     
     //public static FactorMethod f = new Factor_PollardRho();
     //public static FactorMethod f = new Factor_TrialDivision(sieveLimit);
@@ -28,9 +28,9 @@ public class Main {
     //public static FactorMethod f = new Factor_TrialPerfectRho(sieveLimit);
     
     //public static FactorMethod f = new Factor_TrialRhoBrent(sieveLimit);
-    //public static FactorMethod f = new Factor_PollardRhoBrent();
+    public static FactorMethod f = new Factor_PollardRhoBrent();
     //public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
-    public static FactorMethod f = new Factor_PerfectRhoBrent();
+    //public static FactorMethod f = new Factor_PerfectRhoBrent();
     
     public static void main(String args[]) throws IOException {
         

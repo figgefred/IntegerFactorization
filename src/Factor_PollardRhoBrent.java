@@ -18,12 +18,11 @@ public class Factor_PollardRhoBrent implements FactorMethod {
     private BigInteger ONE = BigInteger.ONE;
     private BigInteger ZERO = BigInteger.ZERO;
     
-    private BigInteger C = new BigInteger("1337");
     private BigInteger MAXITERS = new BigInteger("10000");
     
     private Random random = new Random(1337);
     
-    private BigInteger f(BigInteger y, BigInteger n)
+    private BigInteger f(BigInteger y, BigInteger C, BigInteger n)
     {
         return ((y.multiply(y)).add(C)).mod(n);
     }
@@ -46,13 +45,16 @@ public class Factor_PollardRhoBrent implements FactorMethod {
         BigInteger iter=ZERO;
         BigInteger z=new BigInteger(n.bitCount(), random);
         BigInteger q=ONE;
+        
+        
+        BigInteger C = new BigInteger(n.bitCount(), random);
 
         BigInteger y = z;
         
         do {
             x=y;
             for (i=ONE;i.compareTo(r)<=0;i=i.add(ONE)) 
-                y= f(y, n);
+                y= f(y, C, n);
             k=ZERO;
             do {
                 if(task.isTimeout())
@@ -64,7 +66,7 @@ public class Factor_PollardRhoBrent implements FactorMethod {
                 // System.out.print("iter=" + iter.toString() + '\r');
                 ys=y;
                 for (i=ONE; i.compareTo(min(m,r.subtract(k))) <=0 ; i=i.add(ONE)) {
-                    y = f(y, n);
+                    y = f(y, C, n);
                     q = ((y.subtract(x)).multiply(q)).mod(n);
                 }
                 z = n.gcd(q);
@@ -75,7 +77,7 @@ public class Factor_PollardRhoBrent implements FactorMethod {
 
         if (z.compareTo(n)==0)  {
             do {
-                ys = f(ys, n);
+                ys = f(ys, C, n);
                 z = n.gcd(ys.subtract(x));
             } while (z.compareTo(ONE)==0);
         }
