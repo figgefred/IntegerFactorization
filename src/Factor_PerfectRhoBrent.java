@@ -18,19 +18,33 @@ protected Factor_PerfectGeometry geo = new Factor_PerfectGeometry();
             geo.factor(task);	
             while(!task.isFinished()) {	        
 
-                    if(task.isTimeout())
-                            return;
-
-                    if(task.isFinished())
-                            return;
-
                     BigInteger toFactor = task.poll();
+                
+                    if(toFactor.isProbablePrime(10))
+                    {
+                        task.setPartResult(toFactor);
+                        continue;
+                    }
+                    if(toFactor.equals(BigInteger.ONE)) continue;
+                    if(task.isTimeout())
+                    {
+                        task.push(toFactor);
+                        return;
+                    }
+
+//                    if(task.isFinished())
+//                        return;
+
+                    
                     BigInteger divisor;
                     while(true)
                     {
                             divisor = factorizebrent(task, toFactor);
                             if(task.isTimeout())
+                            {
+                                task.push(toFactor);
                                 return;
+                            }
                             if(divisor  == null)
                                 continue;
 //                            if(!divisor.equals(toFactor))
@@ -38,21 +52,10 @@ protected Factor_PerfectGeometry geo = new Factor_PerfectGeometry();
                             break;
                     }
                     
-                    if(divisor.isProbablePrime(10))
-                    {
-                        task.setPartResult(divisor);
-                    } else if(!divisor.equals(BigInteger.ONE)) {
-                        task.push(divisor); 
-                    } 
-
+                    task.push(divisor); 
                     BigInteger quo = toFactor.divide(divisor);
-                    if(quo.isProbablePrime(10))
-                    {
-                            task.setPartResult(quo);
-                    } else if(!quo.equals(BigInteger.ONE)) {
-                            task.push(quo);
-                    }  
-
+                    task.push(quo);
+                    
                     geo.factor(task);
             }
 	     

@@ -27,7 +27,7 @@ public class Factor_TrialPollardRho implements FactorMethod {
     public void factor(Task task) {
         
         trialDivison.factor(task);
-        if(task.isFinished()) {
+        if(task.isTimeout() || task.isFinished()) {
             return;
         }
               

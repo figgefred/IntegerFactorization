@@ -24,7 +24,7 @@ public class Factor_TrialRhoBrent extends Factor_PollardRhoBrent {
     public void factor(Task task) {
         
         trialDivison.factor(task);
-        if(task.isFinished()) {
+        if(task.isTimeout() || task.isFinished()) {
             return;
         }
               

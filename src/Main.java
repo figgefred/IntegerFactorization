@@ -14,13 +14,17 @@ import java.util.List;
 public class Main {
    
     public static boolean DEBUG = true;
-    public static long totalTimeout = 22500;
+    public static long totalTimeout = 14000;
     public static Stopwatch globalTimer = new Stopwatch();
     
+    public static boolean DoBackupPlan = true;
     public static boolean Do_Division_First = true; //true;
     public static boolean Do_Sort_After_Division_First = true;
+    public static boolean Do_Reverse_Sort = false;
+
     
     public static int sieveLimit = 500;
+    public static int BackupTimeThreshold = 20;
     
     //public static FactorMethod f = new Factor_PollardRho();
     //public static FactorMethod f = new Factor_TrialDivision(sieveLimit);
@@ -30,11 +34,12 @@ public class Main {
     
 //    public static FactorMethod f = new Factor_TrialRhoBrent(sieveLimit);
 //    public static FactorMethod f = new Factor_PollardRhoBrent();
-    public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
-//    public static FactorMethod f = new Factor_PerfectRhoBrent();
+    //public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
+    public static FactorMethod f = new Factor_PerfectRhoBrent();
     
     public static void main(String args[]) throws IOException {
         
+        Task.REVERSE_SORT = Do_Reverse_Sort;
         
         BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
         List<Task> tasks = new ArrayList<>();
