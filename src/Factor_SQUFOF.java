@@ -4,6 +4,7 @@ import java.math.BigInteger;
 public class Factor_SQUFOF implements FactorMethod {
 	
 	public Factor_PerfectGeometry geo = new Factor_PerfectGeometry();
+	public static final int MAX_ITERATIONS = 15;
 	
 	public boolean isPerfectSquare(BigInteger N) {
 		return BigMath.isqrt(N).pow(2).equals(N);
@@ -33,6 +34,9 @@ public class Factor_SQUFOF implements FactorMethod {
 			if(task.isTimeout()) {
 				return null;
 			}
+			if(Q1.equals(BigInteger.ZERO))
+				return BigInteger.ONE;
+			
 			BigInteger bi = sqrkn.add(P0).divide(Q1);
 			P1 = bi.multiply(Q1).subtract(P0);
 			BigInteger tmp = Q1;
@@ -45,9 +49,9 @@ public class Factor_SQUFOF implements FactorMethod {
 //			System.out.println("Q"+(i+1)+ " " + Q1);
 //			System.out.println();
 			
-		} while(Q1.compareTo(BigInteger.ONE) > 0 && isPerfectSquare(Q1) && i++ < 1337);
+		} while(Q1.compareTo(BigInteger.ONE) > 0 && isPerfectSquare(Q1) && i++ < MAX_ITERATIONS);
 		
-		if(i >= 1337)
+		if(i >= MAX_ITERATIONS)
 			return BigInteger.ONE;
 		
 //		System.out.println("# Perfect square found:");
@@ -68,7 +72,7 @@ public class Factor_SQUFOF implements FactorMethod {
 //		System.out.println();
 		i = 0;
 		
-		while(i++ < 1337) {
+		while(i++ < MAX_ITERATIONS) {
 			if(task.isTimeout()) {
 				return null;
 			}
@@ -88,7 +92,7 @@ public class Factor_SQUFOF implements FactorMethod {
 //			System.out.println();
 		} 
 		
-		if(i >= 1337)
+		if(i >= MAX_ITERATIONS)
 			return BigInteger.ONE;
 		
 		return N.gcd(P1);
@@ -126,7 +130,7 @@ public class Factor_SQUFOF implements FactorMethod {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		BigInteger N = new BigInteger("18273681273");
+		BigInteger N = new BigInteger("1827368123871231");
 		
 		if(N.isProbablePrime(20)) {
 			System.out.println(N);
