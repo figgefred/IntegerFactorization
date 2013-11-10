@@ -556,7 +556,7 @@ public class Factor_QuadraticSieve implements FactorMethod {
 //    	BigInteger b = new BigInteger("15347");
 //    	BigInteger b = new BigInteger("87463");Object
 //    	BigInteger b = new BigInteger("90283");
-    	BigInteger b = new BigInteger("81712299999");
+    	BigInteger b = new BigInteger("592626948853377802963333718761");
 //        BigInteger b = new BigInteger("138");
 //    	BigInteger b = new BigInteger("16843009");
         //BigDecimal d = new BigDecimal("87");

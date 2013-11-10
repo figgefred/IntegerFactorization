@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class Main {
    
-    public static boolean DEBUG = false;
+    public static boolean DEBUG = true;
     public static long totalTimeout = 22500;
     public static Stopwatch globalTimer = new Stopwatch();
     
