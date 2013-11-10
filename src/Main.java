@@ -13,14 +13,18 @@ import java.util.List;
  */
 public class Main {
    
-    public static boolean DEBUG = false;
-    public static long totalTimeout = 22500;
+    public static boolean DEBUG = true;
+    public static long totalTimeout = 14000;
     public static Stopwatch globalTimer = new Stopwatch();
     
+    public static boolean DoBackupPlan = true;
     public static boolean Do_Division_First = true; //true;
     public static boolean Do_Sort_After_Division_First = true;
+    public static boolean Do_Reverse_Sort = false;
+
     
     public static int sieveLimit = 500;
+    public static int BackupTimeThreshold = 20;
     
     //public static FactorMethod f = new Factor_PollardRho();
     //public static FactorMethod f = new Factor_TrialDivision(sieveLimit);
@@ -30,11 +34,12 @@ public class Main {
     
 //    public static FactorMethod f = new Factor_TrialRhoBrent(sieveLimit);
 //    public static FactorMethod f = new Factor_PollardRhoBrent();
-    public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
-//    public static FactorMethod f = new Factor_PerfectRhoBrent();
+    //public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
+    public static FactorMethod f = new Factor_PerfectRhoBrent();
     
     public static void main(String args[]) throws IOException {
         
+        Task.REVERSE_SORT = Do_Reverse_Sort;
         
         BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
         List<Task> tasks = new ArrayList<>();
@@ -63,8 +68,49 @@ public class Main {
         
         if(DEBUG) 
         {
+            List<Task> oddTasks = new ArrayList<>();
+            
+            int correct = 0;
             int finished = 0;
+            globalTimer.stop();
             for (Task result : results) {
+                BigInteger b = new BigInteger("1");
+                for(BigInteger r : result.getResults())
+                {
+                    b = b.multiply(r);
+                }
+                if(b.equals(result.initial))
+                {
+                    if(result.isFinished())
+                        finished++;
+                    correct++;
+                    System.out.println();
+                    System.out.println("CORRECT");
+                    System.out.println(result);
+                    System.out.println();
+                }
+                else if(result.isFinished())
+                {
+                    finished++;
+                    oddTasks.add(result);
+                }
+                else
+                {
+                    System.out.println();
+                    System.out.println("FALSE");
+                    System.out.println(result);
+                    System.out.println();
+                }
+            }
+            for(Task t: oddTasks)
+            {
+                System.out.println();
+                System.out.println("ODD");
+                System.out.println(t);
+                System.out.println();
+            }
+            
+            /*for (Task result : results) {
                 if (!result.isTimeout() && result.isFinished()) {
                     finished++;
                 }
@@ -72,9 +118,11 @@ public class Main {
                     dPrintln("FAILED: ");
                     dPrintln("  " + result);
                 }
-            }
+            }*/
+            dPrintln("Correct answers " + correct + "/"+ results.length);
             dPrintln("Finished " + finished + "/"+ results.length);
-            dPrintln("Executed for " + globalTimer.stop().milliseconds() + "ms");
+            dPrintln("Odd results " + ((int)Math.abs(correct-finished)) + "/"+ results.length);
+            dPrintln("Executed for " + globalTimer.milliseconds() + "ms");
         }
         
         
@@ -102,6 +150,9 @@ public class Main {
         int tasksleft = tasks.size();
         long timeleft = totalTimeout - globalTimer.milliseconds();
         dPrintln("Time left for work is " + timeleft + "ms");
+        
+        List<Task> failedTasks = new ArrayList<>();
+        int i = 0;
         for(Task t: tasks)
         {
         	
@@ -110,14 +161,66 @@ public class Main {
             dPrint("Task-" + t.index + "(" + t.initial + ") was allocated " + timeout + "ms working time" );
             // Work!
             f.factor(t);
-            
             t.timer.stop();
-            results[t.index] = t;            
-            timeleft -= t.getExecutionTime();
+            if(t.isTimeout())
+                failedTasks.add(t);
+            results[t.index] = t;        
+            //timeleft -= t.getExecutionTime();
+            timeleft = totalTimeout - globalTimer.milliseconds();
             dPrintln("Task-" + t.index + " executed for " + t.getExecutionTime() + "ms");
             tasksleft--;
         }
+        
+        if(DoBackupPlan)
+        {
+            f = new Factor_PollardRhoBrent();
+            doBackupWork(failedTasks);
+        }
+        
         return results;
+    }
+    
+    public static void doBackupWork(List<Task> tasks)
+    {
+        long timeleft = totalTimeout - globalTimer.milliseconds();
+//        System.out.println("Backup for " + timeleft + "ms. Failed tasks count is " + tasks.size());
+        if(tasks.size() == 0 || timeleft/tasks.size() < BackupTimeThreshold)
+        {
+            return;
+        }
+        
+        if(Do_Sort_After_Division_First)
+        {
+            Task.REVERSE_SORT = !Task.REVERSE_SORT;
+            Collections.sort(tasks);
+        }
+        
+//        System.out.println("Starting backup!");
+        int tasksleft = tasks.size();
+        List<Task> failedTasks = new ArrayList<>();
+        dPrintln("REDO of factoring!");
+        dPrintln("Time left for backup work is " + timeleft + "ms");
+        for(Task t: tasks)
+        {
+            long timeout = getNextTimeoutDuration(timeleft, tasksleft);
+            t.setNewTimout(new Timing(timeout));
+            dPrint("Task-" + t.index + "(" + t.initial + ") was allocated " + timeout + "ms working time" );
+            // Work!
+            f.factor(t);
+            t.timer.stop();
+            if(t.isTimeout())
+                failedTasks.add(t);
+            else if(t.isFinished())
+                dPrintln("SOLVED one in backup plan phase");
+            //results[t.index] = t;            
+            timeleft = totalTimeout - globalTimer.milliseconds();
+            dPrintln("Task-" + t.index + " executed for " + t.getExecutionTime() + "ms");
+            tasksleft--;
+        }
+        
+        timeleft = totalTimeout - globalTimer.milliseconds();
+//      System.out.println("Next time slice is " + timeleft + "ms. Failed tasks count is " + failedTasks.size());
+        doBackupWork(failedTasks);
     }
     
     

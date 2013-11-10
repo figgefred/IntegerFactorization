@@ -15,6 +15,7 @@ import java.util.Queue;
  * @author fred
  */
 public class Task implements Comparable<Task>  {
+    public static boolean REVERSE_SORT = true;
     
 //    public BigInteger toFactor;
     public final int index;
@@ -96,12 +97,12 @@ public class Task implements Comparable<Task>  {
         sb.append("# Tasks: ").append("\n").append("  ");
         for(BigInteger b: toFactor)
         {
-            sb.append(b.toString()).append(" ");
+            sb.append(" " + b.toString()).append(" ");
         }
-        sb.append("# Results: ").append("\n").append("  ");
+        sb.append("\n# Results: ").append("\n").append("  ");
         for(BigInteger r: results)
         {
-            sb.append(r.toString()).append(" ");
+            sb.append(" " + r.toString()).append(" ");
         }
         sb.append("\n");
         return sb.toString();
@@ -111,7 +112,7 @@ public class Task implements Comparable<Task>  {
 
     @Override
     public int compareTo(Task t) {        
-        return (this.initial.compareTo(t.initial)) * -1;
+        return (this.initial.compareTo(t.initial)) * (REVERSE_SORT?-1:1);
     }
     
 }

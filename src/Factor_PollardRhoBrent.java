@@ -20,7 +20,7 @@ public class Factor_PollardRhoBrent implements FactorMethod {
     
     private BigInteger MAXITERS = new BigInteger("100000000");
     
-    private Random random = new Random(1337);
+    private Random random = new Random(1339);
     
     private BigInteger f(BigInteger y, BigInteger C, BigInteger n)
     {
@@ -164,22 +164,26 @@ public class Factor_PollardRhoBrent implements FactorMethod {
 	        BigInteger toFactor = task.poll();
 //	        System.out.println(toFactor);
 	        
-	        if (toFactor.compareTo(ONE) == 0) {
-	            continue;
-	        }
 	        if (toFactor.isProbablePrime(20)) { 
 	            task.setPartResult(toFactor);
 	            continue;
 	        }
-	        
-                // Tofactor may not be prime
+	        if(toFactor.equals(BigInteger.ONE)) continue;
+                if(task.isTimeout())
+                {
+                    task.push(toFactor);
+                    return;
+                }
                 
 	        BigInteger divisor = null;
 	        while(true)
 	        {
                     divisor = factorizebrent(task, toFactor);
                     if(task.isTimeout())
+                    {
+                        task.push(toFactor);
                         return;
+                    }
                     if(divisor == null)
                         continue;
                     if(!divisor.equals(toFactor))

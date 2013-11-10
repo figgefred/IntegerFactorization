@@ -56,20 +56,26 @@ public class Factor_PollardRho implements FactorMethod {
 	        BigInteger toFactor = task.poll();
 //	        System.out.println(toFactor);
 	        
-	        if (toFactor.compareTo(ONE) == 0) {
-	            continue;
-	        }
 	        if (toFactor.isProbablePrime(20)) { 
 	            task.setPartResult(toFactor);
 	            continue;
 	        }
+                if(toFactor.equals(BigInteger.ONE)) continue;
+                if(task.isTimeout())
+                {
+                    task.push(toFactor);
+                    return;
+                }
 	        
 	        BigInteger divisor;
 	        for(int i = 0; ; i++)
 	        {
 		        divisor = rho(task, toFactor, i);
 		        if(task.isTimeout())
+                        {
+                            task.push(toFactor);
 		            return;
+                        }
 		        if(!divisor.equals(toFactor))
                     break;
 	        }

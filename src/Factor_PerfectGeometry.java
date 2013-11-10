@@ -19,19 +19,19 @@ public class Factor_PerfectGeometry implements FactorMethod {
 		for(int k = 2; k < NumberOfDimensions; k++)
 		{
 			if(task.isTimeout()) {				
-				return false;
+                            return false;
 			}
 			
 			BigInteger root = getPowRoot(val, k);
 			if(root == null)
-				continue;
+                            continue;
 			
 			if(root.isProbablePrime(PrimeCertainty))
-				for(int i = 0; i < k; i++)
-					task.setPartResult(root);	
+                            for(int i = 0; i < k; i++)
+                                task.setPartResult(root);	
 			else {
-				for(int i = 0; i < k; i++)
-					task.push(root);		
+                            for(int i = 0; i < k; i++)
+                                task.push(root);		
 			}
 			return true;
 		}
@@ -46,15 +46,18 @@ public class Factor_PerfectGeometry implements FactorMethod {
         {
         	BigInteger val = task.poll();
         	boolean managedToFilter = factor(task, val);
-        	if(task.isTimeout())
-        		return;        
         	if(!managedToFilter)
-        		partFactors.add(val);
+                {
+                    partFactors.add(val);
+                }
+                if(task.isTimeout())
+                {
+                    break;
+                }
         }
-        
-        for(BigInteger leftToFactor : partFactors) {
-        	task.push(leftToFactor);
-        }
+            for(BigInteger leftToFactor : partFactors) {
+                task.push(leftToFactor);
+            }
 	}
 	
 	

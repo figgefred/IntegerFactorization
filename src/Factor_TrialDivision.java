@@ -32,10 +32,7 @@ public class Factor_TrialDivision implements FactorMethod {
     
     private BigInteger factor(Task task, BigInteger toFactor) {
     	 
-        if(toFactor.equals(BigInteger.ONE)) {            
-            // task.setPartResult(toFactor); nja?
-            return null;
-        }
+        if(toFactor.equals(BigInteger.ONE)) return null;
         
         Iterator<Integer> iter = sieve.getPrimes().iterator();
         while(iter.hasNext())

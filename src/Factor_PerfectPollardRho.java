@@ -10,15 +10,24 @@ public class Factor_PerfectPollardRho extends Factor_PollardRho {
 		geo.factor(task);
 		
     	while(!task.isFinished()) {	        
-	        
-	        if(task.isTimeout())
-	        	return;
-	        
-	        if(task.isFinished())
-	        	return;
 
 	        BigInteger toFactor = task.poll();
 	        
+                if(toFactor.isProbablePrime(20))
+	        {
+                    task.setPartResult(toFactor);
+                    continue;
+	        } 
+                if(toFactor.equals(BigInteger.ONE)) continue;
+	        if(task.isTimeout())
+                {
+                    task.push(toFactor);
+                    return;
+                }
+	        
+//	        if(task.isFinished())
+//	        	return;
+                
 //	        if (toFactor.compareTo(ONE) == 0) {
 //	            continue;
 //	        }
@@ -30,11 +39,14 @@ public class Factor_PerfectPollardRho extends Factor_PollardRho {
 	        BigInteger divisor;
 	        for(int i = 0; ; i++)
 	        {
-		        divisor = rho(task, toFactor, i);
-		        if(task.isTimeout())
-		            return;
-		        if(!divisor.equals(toFactor))
-		        	break;
+                    divisor = rho(task, toFactor, i);
+                    if(task.isTimeout())
+                    {
+                        task.push(toFactor);
+                        return;
+                    }
+                    if(!divisor.equals(toFactor))
+                        break;
 	        }
 //	        if(task.isTimeout())
 //	            return;
@@ -44,20 +56,9 @@ public class Factor_PerfectPollardRho extends Factor_PollardRho {
 //	        	continue;
 //	        }
 	        
-	        if(divisor.isProbablePrime(20))
-	        {
-	        	task.setPartResult(divisor);
-	        } else {
-	        	task.push(divisor); 
-	        }
-	        
+                task.push(divisor); 
 	        BigInteger quo = toFactor.divide(divisor);
-	        if(quo.isProbablePrime(20))
-	        {
-	        	task.setPartResult(quo);
-	        } else {
-	        	task.push(quo);
-        	}  
+                task.push(quo);
 	        
 	        geo.factor(task);
     	}
