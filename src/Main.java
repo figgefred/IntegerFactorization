@@ -14,14 +14,16 @@ import java.util.List;
 public class Main {
    
     public static boolean DEBUG = false;
-    public static long totalTimeout = 14500;
+    public static long totalTimeout = 18000;
     public static Stopwatch globalTimer = new Stopwatch();
     
-    public static boolean DoBackupPlan = true;
-    public static boolean Do_Division_First = true; //true;
+    public static boolean DoBackupPlan = false;
+    public static boolean Do_PreWork = true; //true;
     public static boolean Do_Sort_After_Division_First = true;
-    public static boolean Do_Reverse_Sort = false;
+    public static boolean Do_Reverse_Sort = true;
 
+    public static boolean Relocate_Elems = true;
+    
     public static boolean switchYes = false;
     
     public static int sieveLimit = 500;
@@ -32,9 +34,9 @@ public class Main {
     //public static FactorMethod f = new Factor_TrialPollardRho(sieveLimit);
 //    public static FactorMethod f = new Factor_PerfectPollardRho();
     //public static FactorMethod f = new Factor_TrialPerfectRho(sieveLimit);
-    
+    //public static FactorMethod f = new Factor_PerfRhoBrentSQUFOF();
 //    public static FactorMethod f = new Factor_TrialRhoBrent(sieveLimit);
-//    public static FactorMethod f = new Factor_PollardRhoBrent();
+   //public static FactorMethod f = new Factor_PollardRhoBrent();
     //public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
     public static FactorMethod f = new Factor_PerfectRhoBrent();
     //public static FactorMethod f = new Factor_SQUFOF();
@@ -61,8 +63,8 @@ public class Main {
             line = read.readLine();
         }
         Task[] results;
-        if(Do_Division_First)
-            results = doWorkDivFirst(tasks);
+        if(Do_PreWork)
+            results = doPreWork(tasks);
         else
             results = doWork(tasks);
         
@@ -87,20 +89,62 @@ public class Main {
         
     }
     
-    public static Task[] doWorkDivFirst(List<Task> tasks)
+    public static Task[] doPreWork(List<Task> tasks)
     {
         FactorMethod fStart = new Factor_TrialDivision(sieveLimit);
+        FactorMethod fGeo = new Factor_PerfectGeometry();
         
         for(Task task:tasks)
         {
             fStart.factor(task);
+            fGeo.factor(task);
         }
         
         if(Do_Sort_After_Division_First)
         	Collections.sort(tasks);
+        if(Relocate_Elems)
+                tasks = getRelocation(tasks);
         
         Task[] results = doWork(tasks);
         return results;
+    }
+    
+    private static List<Task> getRelocation(List<Task> tasks)
+    {
+        
+        // Very undynamic
+        int chunksize = tasks.size()/4;
+        
+        int s1 = 0;
+        int s2 = chunksize;
+        int s3 = s2 + chunksize;
+        
+        int half = chunksize*2;
+        
+        List<Task> newTasks = new ArrayList<Task>();
+        for(int i = 0; i < tasks.size(); i++)
+        {
+            // First chunk is at same place
+            if(i >= s1 && i < s2)
+            {
+                newTasks.add(tasks.get(i));
+            }
+            // Next chunk is put in the back
+            else if(i >= s2 && i < s3)
+            {
+                int index = i+half;
+                if(index < tasks.size())
+                    newTasks.add(tasks.get(index));
+            }
+            // The last half is pushed (chunksize) to left
+            else if(i >= s3)
+            {
+                int index = i-chunksize;
+                if(index < tasks.size())
+                    newTasks.add(tasks.get(index));
+            }
+        }
+        return newTasks;
     }
     
     public static Task[] doWork(List<Task> tasks)
@@ -114,7 +158,7 @@ public class Main {
         int i = 0;
         for(Task t: tasks)
         {
-                
+            results[t.index] = t;
             long timeout = getNextTimeoutDuration(timeleft, tasksleft);
             t.setNewTimout(new Timing(timeout));
             dPrint("Task-" + t.index + "(" + t.initial + ") was allocated " + timeout + "ms working time" );
@@ -123,7 +167,6 @@ public class Main {
             t.timer.stop();
             if(t.isTimeout())
                 failedTasks.add(t);
-            results[t.index] = t;        
             //timeleft -= t.getExecutionTime();
             timeleft = totalTimeout - globalTimer.milliseconds();
             dPrintln("Task-" + t.index + " executed for " + t.getExecutionTime() + "ms");

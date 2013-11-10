@@ -66,6 +66,11 @@ public class Task implements Comparable<Task>  {
         results.add(b);
     }
     
+    public int getQueueCount()
+    {
+        return toFactor.size();
+    }
+    
     public long getExecutionTime()
     {
         return timer.getRunTime();

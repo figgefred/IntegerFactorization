@@ -1,3 +1,5 @@
+package unfinished;
+
 /*************************************************************************
  *  Compilation:  javac Matrix.java
  *  Execution:    java Matrix
