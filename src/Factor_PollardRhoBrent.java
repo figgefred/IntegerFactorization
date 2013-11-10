@@ -184,7 +184,7 @@ public class Factor_PollardRhoBrent implements FactorMethod {
                         continue;
                     if(!divisor.equals(toFactor))
                         break;
-                    System.out.println(divisor);
+//                    System.out.println(divisor);
 	        }
 	        task.push(divisor);	   
 //	        factor(task);

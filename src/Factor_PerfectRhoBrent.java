@@ -38,21 +38,18 @@ protected Factor_PerfectGeometry geo = new Factor_PerfectGeometry();
                             break;
                     }
                     
-                    if(divisor.isProbablePrime(20))
+                    if(divisor.isProbablePrime(10))
                     {
                         task.setPartResult(divisor);
                     } else if(!divisor.equals(BigInteger.ONE)) {
                         task.push(divisor); 
-                    } else {
-                    	task.push(toFactor);
-                    	continue;
-                    }
+                    } 
 
                     BigInteger quo = toFactor.divide(divisor);
-                    if(quo.isProbablePrime(20))
+                    if(quo.isProbablePrime(10))
                     {
                             task.setPartResult(quo);
-                    } else if(!divisor.equals(BigInteger.ONE)) {
+                    } else if(!quo.equals(BigInteger.ONE)) {
                             task.push(quo);
                     }  
 

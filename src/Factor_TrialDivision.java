@@ -15,14 +15,14 @@ import java.util.List;
  */
 public class Factor_TrialDivision implements FactorMethod {
 
-    public SievePrime sieve;
+    public SieveAtkins sieve;
     
     public Factor_TrialDivision(int primenumbers)
     {
         this(new SieveAtkins((primenumbers)));
     }
     
-    public Factor_TrialDivision(SievePrime sieve)
+    public Factor_TrialDivision(SieveAtkins sieve)
     {
         if(sieve == null) {
             throw new IllegalArgumentException("Sieve is null");
@@ -44,8 +44,8 @@ public class Factor_TrialDivision implements FactorMethod {
                 return toFactor;
             Integer p = iter.next();
             BigInteger prime = BigInteger.valueOf(p.intValue());
-            if(prime.multiply(prime).compareTo(toFactor) > 0)
-                break;
+//            if(prime.multiply(prime).compareTo(toFactor) > 0)
+//                break;
             while (toFactor.mod(prime).equals(BigInteger.ZERO))
             {
                 task.setPartResult(prime);

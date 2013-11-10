@@ -111,7 +111,7 @@ public class Task implements Comparable<Task>  {
 
     @Override
     public int compareTo(Task t) {        
-        return (this.initial.compareTo(t.initial));
+        return (this.initial.compareTo(t.initial)) * -1;
     }
     
 }

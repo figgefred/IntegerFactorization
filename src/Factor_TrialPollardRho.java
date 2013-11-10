@@ -17,7 +17,7 @@ public class Factor_TrialPollardRho implements FactorMethod {
         this(new SieveAtkins(primeNumbers));
     }
     
-    public Factor_TrialPollardRho(SievePrime primeSieve)
+    public Factor_TrialPollardRho(SieveAtkins primeSieve)
     {
         trialDivison = new Factor_TrialDivision(primeSieve);
         pollardRho = new Factor_PollardRho();        

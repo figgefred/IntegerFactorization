@@ -11,7 +11,7 @@ import java.math.BigInteger;
  * @author figgefred
  */
 public class Factor_TrialPerfectRhoBrent extends Factor_PerfectRhoBrent {
-    protected FactorMethod trial;
+    protected Factor_TrialDivision trial;
 	
         public Factor_TrialPerfectRhoBrent(int primenumbers)
         {
@@ -26,6 +26,10 @@ public class Factor_TrialPerfectRhoBrent extends Factor_PerfectRhoBrent {
 			return;
                 
 		super.factor(task);
+		
+	
+//		for(BigInteger prime : task.getResults())
+//			trial.sieve.add(prime.intValue());
 	}
 	
 	/**

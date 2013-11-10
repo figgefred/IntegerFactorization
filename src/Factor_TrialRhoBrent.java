@@ -15,7 +15,7 @@ public class Factor_TrialRhoBrent extends Factor_PollardRhoBrent {
         this(new SieveAtkins(primeNumbers));
     }
     
-    public Factor_TrialRhoBrent(SievePrime primeSieve)
+    public Factor_TrialRhoBrent(SieveAtkins primeSieve)
     {
         trialDivison = new Factor_TrialDivision(primeSieve);
     }

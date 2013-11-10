@@ -13,11 +13,12 @@ import java.util.List;
  */
 public class Main {
    
-    public static boolean DEBUG = true;
-    public static long totalTimeout = 17500;
+    public static boolean DEBUG = false;
+    public static long totalTimeout = 22500;
     public static Stopwatch globalTimer = new Stopwatch();
     
     public static boolean Do_Division_First = true; //true;
+    public static boolean Do_Sort_After_Division_First = true;
     
     public static int sieveLimit = 500;
     
@@ -29,8 +30,8 @@ public class Main {
     
 //    public static FactorMethod f = new Factor_TrialRhoBrent(sieveLimit);
 //    public static FactorMethod f = new Factor_PollardRhoBrent();
-//    public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
-    public static FactorMethod f = new Factor_PerfectRhoBrent();
+    public static FactorMethod f = new Factor_TrialPerfectRhoBrent(sieveLimit);
+//    public static FactorMethod f = new Factor_PerfectRhoBrent();
     
     public static void main(String args[]) throws IOException {
         
@@ -87,6 +88,10 @@ public class Main {
         {
             fStart.factor(task);
         }
+        
+        if(Do_Sort_After_Division_First)
+        	Collections.sort(tasks);
+        
         Task[] results = doWork(tasks);
         return results;
     }
